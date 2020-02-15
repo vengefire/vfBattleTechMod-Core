@@ -1,26 +1,35 @@
-﻿using System;
-using HBS.Logging;
-using vfBattleTechMod_Core.Utils.Interfaces;
-
-namespace vfBattleTechMod_Core.Utils
+﻿namespace vfBattleTechMod_Core.Utils
 {
+    using System;
+    using System.IO;
+
+    using HBS.Logging;
+
+    using vfBattleTechMod_Core.Utils.Interfaces;
+
     public class Logger : ILogger
     {
-        private readonly ILog _logger;
+        private readonly ILogAppender logAppender;
 
-        public Logger(ILog logger)
+        private readonly ILog logger;
+
+        public Logger(ILog logger, string directory, string moduleName)
         {
-            _logger = logger;
+            this.logger = logger;
+            this.logAppender = new FileLogAppender(
+                Path.Combine(directory, "log.txt"),
+                FileLogAppender.WriteMode.INSTANT);
+            HBS.Logging.Logger.AddAppender(moduleName, this.logAppender);
         }
 
         public void Debug(string message)
         {
-            _logger.LogDebug(message);
+            this.logger.LogDebug(message);
         }
 
         public void Error(string message, Exception ex)
         {
-            _logger.LogError(message, ex);
+            this.logger.LogError(message, ex);
         }
     }
 }

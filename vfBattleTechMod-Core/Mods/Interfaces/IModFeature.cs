@@ -1,9 +1,15 @@
 ﻿namespace vfBattleTechMod_Core.Mods.Interfaces
 {
+    using Harmony;
+
+    using vfBattleTechMod_Core.Utils.Interfaces;
+
     public interface IModFeature
     {
-        string Name { get; set; }
         bool Enabled { get; set; }
-        void Initialize();
+
+        string Name { get; set; }
+
+        void Initialize(HarmonyInstance harmonyInstance, string settings, ILogger logger, string directory);
     }
 }
