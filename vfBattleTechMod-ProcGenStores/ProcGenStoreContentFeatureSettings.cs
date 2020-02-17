@@ -1,7 +1,9 @@
-﻿namespace vfBattleTechMod_ProcGenStores
+﻿using vfBattleTechMod_Core.Mods.BaseImpl;
+
+namespace vfBattleTechMod_ProcGenStores
 {
-    internal class ProcGenStoreContentFeatureSettings
+    public class ProcGenStoreContentFeatureSettings : ModFeatureSettingsBase
     {
-        internal int test = 666;
+        public int test = 666;
     }
 }

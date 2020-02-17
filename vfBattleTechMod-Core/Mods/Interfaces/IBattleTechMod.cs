@@ -1,19 +1,14 @@
 ﻿namespace vfBattleTechMod_Core.Mods.Interfaces
 {
     using System.Collections.Generic;
-
-    using Harmony;
-
     using vfBattleTechMod_Core.Utils.Interfaces;
 
     public interface IBattleTechMod
     {
-        ILogger Logger { get; set; }
+        ILogger Logger { get; }
 
-        List<IModFeature> ModFeatures { get; set; }
+        List<IModFeature<IModFeatureSettings>> ModFeatures { get; }
 
-        string Name { get; set; }
-
-        void Initialize(HarmonyInstance harmonyInstance, string settings);
+        string Name { get; }
     }
 }
