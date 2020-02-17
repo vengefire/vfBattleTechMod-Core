@@ -1,11 +1,14 @@
-﻿using System.Collections.Generic;
-using Harmony;
-using Newtonsoft.Json;
-using vfBattleTechMod_Core.Mods.Interfaces;
-using vfBattleTechMod_Core.Utils.Interfaces;
-
-namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
+    using System.Collections.Generic;
+
+    using Harmony;
+
+    using Newtonsoft.Json;
+
+    using vfBattleTechMod_Core.Mods.Interfaces;
+    using vfBattleTechMod_Core.Utils.Interfaces;
+
     public abstract class ModFeatureBase<TModFeatureSettings> : IModFeature<TModFeatureSettings>
         where TModFeatureSettings : IModFeatureSettings
     {
@@ -14,33 +17,38 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             this.PatchDirectives = patchDirectives;
         }
 
-        protected string Directory { get; private set; }
-
-        protected static ILogger Logger { get; set; }
-
         public bool Enabled => this.Settings.Enabled;
 
         public abstract string Name { get; }
 
-        public virtual void Initialize(HarmonyInstance harmonyInstance, string settings, ILogger logger, string directory)
+        public List<IModPatchDirective> PatchDirectives { get; }
+
+        public TModFeatureSettings Settings { get; private set; }
+
+        protected static ILogger Logger { get; set; }
+
+        protected string Directory { get; private set; }
+
+        public virtual void Initialize(
+            HarmonyInstance harmonyInstance,
+            string settings,
+            ILogger logger,
+            string directory)
         {
-            ModFeatureBase<TModFeatureSettings>.Logger = logger;
+            Logger = logger;
             this.Directory = directory;
             this.Settings = JsonConvert.DeserializeObject<TModFeatureSettings>(settings);
             this.ExecutePatchDirectives(harmonyInstance);
             this.OnInitializeComplete();
-            Logger.Debug($"Feature [{this.Name}] initialized with settings [{JsonConvert.SerializeObject(this.Settings)}]");
+            Logger.Debug(
+                $"Feature [{this.Name}] initialized with settings [{JsonConvert.SerializeObject(this.Settings)}]");
         }
-
-        private void ExecutePatchDirectives(HarmonyInstance harmonyInstance)
-        {
-            this.PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, ModFeatureBase<TModFeatureSettings>.Logger));
-        }
-
-        public TModFeatureSettings Settings { get; private set; }
 
         public abstract void OnInitializeComplete();
 
-        public List<IModPatchDirective> PatchDirectives { get; }
+        private void ExecutePatchDirectives(HarmonyInstance harmonyInstance)
+        {
+            this.PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, Logger));
+        }
     }
 }

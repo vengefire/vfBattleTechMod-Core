@@ -1,11 +1,9 @@
-﻿using vfBattleTechMod_Core.Mods.Interfaces;
-
-namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
+    using vfBattleTechMod_Core.Mods.Interfaces;
+
     public class ModFeatureSettingsBase : IModFeatureSettings
     {
-        private bool enabled = false;
-
-        bool IModFeatureSettings.Enabled => this.enabled;
+        bool IModFeatureSettings.Enabled { get; } = false;
     }
 }

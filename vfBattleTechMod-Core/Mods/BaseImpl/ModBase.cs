@@ -1,16 +1,25 @@
-﻿using System.Collections.Generic;
-using Harmony;
-using HBS.Logging;
-using vfBattleTechMod_Core.Helpers;
-using vfBattleTechMod_Core.Mods.Interfaces;
-using vfBattleTechMod_Core.Utils.Interfaces;
-using Logger = vfBattleTechMod_Core.Utils.Logger;
-
-namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
-    public abstract class ModBase<TSettingsClass> : IBattleTechMod
+    using System.Collections.Generic;
+
+    using Harmony;
+
+    using HBS.Logging;
+
+    using vfBattleTechMod_Core.Helpers;
+    using vfBattleTechMod_Core.Mods.Interfaces;
+    using vfBattleTechMod_Core.Utils.Interfaces;
+
+    using Logger = vfBattleTechMod_Core.Utils.Logger;
+
+    public abstract class ModBase : IBattleTechMod
     {
-        protected ModBase(HarmonyInstance harmonyInstance, string directory, string settings, string name, List<IModFeature> modFeatures)
+        protected ModBase(
+            HarmonyInstance harmonyInstance,
+            string directory,
+            string settings,
+            string name,
+            List<IModFeature<IModFeatureSettings>> modFeatures)
         {
             this.InitialiseLogging(directory);
             this.Name = name;
@@ -20,11 +29,13 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             this.Initialize(harmonyInstance, settings);
         }
 
-        private void InitialiseLogging(string directory)
-        {
-            var hbsLogger = this.GetHbsLogger();
-            this.Logger = new Logger(hbsLogger, directory, this.Name);
-        }
+        public string Directory { get; }
+
+        public ILogger Logger { get; private set; }
+
+        public List<IModFeature<IModFeatureSettings>> ModFeatures { get; }
+
+        public string Name { get; }
 
         private ILog GetHbsLogger()
         {
@@ -32,13 +43,12 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             return hbsLogger;
         }
 
-        public ILogger Logger { get; set; }
-
-        public List<IModFeature> ModFeatures { get; }
-
-        public string Name { get; set; }
-
-        public string Directory { get; set; }
+        private void InitialiseLogging(string directory)
+        {
+            var hbsLogger = this.GetHbsLogger();
+            hbsLogger.LogDebug($"Initializing logging for [{this.Name}]");
+            this.Logger = new Logger(hbsLogger, directory, this.Name);
+        }
 
         private void Initialize(HarmonyInstance harmonyInstance, string settings)
         {

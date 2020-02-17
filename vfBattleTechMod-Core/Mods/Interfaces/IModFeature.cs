@@ -1,22 +1,24 @@
-﻿using System.Collections.Generic;
-
-namespace vfBattleTechMod_Core.Mods.Interfaces
+﻿namespace vfBattleTechMod_Core.Mods.Interfaces
 {
+    using System.Collections.Generic;
+
     using Harmony;
+
     using vfBattleTechMod_Core.Utils.Interfaces;
 
-    public interface IModFeature<out TModFeatureSettings> where TModFeatureSettings : IModFeatureSettings
+    public interface IModFeature<out TModFeatureSettings>
+        where TModFeatureSettings : IModFeatureSettings
     {
         bool Enabled { get; }
 
         string Name { get; }
 
-        void Initialize(HarmonyInstance harmonyInstance, string settings, ILogger logger, string directory);
+        List<IModPatchDirective> PatchDirectives { get; }
 
         TModFeatureSettings Settings { get; }
 
-        void OnInitializeComplete();
+        void Initialize(HarmonyInstance harmonyInstance, string settings, ILogger logger, string directory);
 
-        List<IModPatchDirective> PatchDirectives { get; }
+        void OnInitializeComplete();
     }
 }

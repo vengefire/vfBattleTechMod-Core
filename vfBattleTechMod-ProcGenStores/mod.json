@@ -13,8 +13,8 @@
   ],
 
   "Settings": {
-    "Procedurally Generate Store Contents" : {
-      "test" :  777 
-    } 
+    "Procedurally Generate Store Contents": {
+      "test": 777
+    }
   }
 }

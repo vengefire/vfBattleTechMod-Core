@@ -9,7 +9,7 @@
         public static void Init(string directory, string settings)
         {
             var harmonyInstance = HarmonyInstance.Create(@"vengefire.procgenstores");
-            ProcGenStoresMod = new ProcGenStoresMod(harmonyInstance, directory, settings, @"vf-procGenStoresMod");
+            ProcGenStoresMod = new ProcGenStoresMod(harmonyInstance, directory, settings, nameof(ProcGenStoresMod));
         }
     }
 }
