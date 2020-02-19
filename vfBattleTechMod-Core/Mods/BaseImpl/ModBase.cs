@@ -40,6 +40,7 @@
         private ILog GetHbsLogger()
         {
             var hbsLogger = HBS.Logging.Logger.GetLogger(this.Name, LogLevel.Debug);
+            HBS.Logging.Logger.SetLoggerLevel(this.Name, LogLevel.Debug);
             return hbsLogger;
         }
 

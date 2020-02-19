@@ -1,4 +1,4 @@
-﻿namespace vfBattleTechMod_ProcGenStores
+﻿namespace vfBattleTechMod_ProcGenStores.Mod
 {
     public class ProcGenStoresModSettings
     {

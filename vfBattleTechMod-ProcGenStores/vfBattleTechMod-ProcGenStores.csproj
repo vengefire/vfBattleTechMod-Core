@@ -52,10 +52,11 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ProcGenStoreContentFeature.cs" />
-    <Compile Include="ProcGenStoreContentFeatureSettings.cs" />
-    <Compile Include="ProcGenStoresMod.cs" />
-    <Compile Include="ProcGenStoresModSettings.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Enums\RarityEnum.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeature.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeatureSettings.cs" />
+    <Compile Include="Mod\ProcGenStoresMod.cs" />
+    <Compile Include="Mod\ProcGenStoresModSettings.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
@@ -69,6 +70,10 @@
     <None Include="mod.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Mod\Features\ProcGenStoresContent\Logic\" />
+    <Folder Include="Res\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

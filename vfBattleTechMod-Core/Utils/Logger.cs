@@ -1,12 +1,10 @@
-﻿namespace vfBattleTechMod_Core.Utils
+﻿using System;
+using System.IO;
+using HBS.Logging;
+using vfBattleTechMod_Core.Utils.Interfaces;
+
+namespace vfBattleTechMod_Core.Utils
 {
-    using System;
-    using System.IO;
-
-    using HBS.Logging;
-
-    using vfBattleTechMod_Core.Utils.Interfaces;
-
     public class Logger : ILogger
     {
         private readonly ILogAppender logAppender;
@@ -29,7 +27,7 @@
 
         public void Error(string message, Exception ex)
         {
-            this.logger.LogError(message, ex);
+            this.logger.LogDebug(message);
         }
     }
 }
