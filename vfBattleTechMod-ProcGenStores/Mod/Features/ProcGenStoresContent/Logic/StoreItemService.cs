@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BattleTech;
 using vfBattleTechMod_Core.Utils.Interfaces;
 
@@ -14,6 +16,25 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         {
             this.logger = logger;
             this.StoreItems = StoreItemLoader.LoadStoreItemsFromExcel(storeItemSourceFilePath, rarityBrackets, storeResourceTypes, logger);
+        }
+
+        public List<StoreItem> GenerateItemsForStore(Shop shop, StarSystem starSystem, DateTime currentDate, List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers, ProcGenStoreContentFeatureSettings settings)
+        {
+            this.logger.Debug($"Generating shop inventory for [{starSystem.Name} - {shop.ThisShopType.ToString()} - {starSystem.OwnerValue.Name}]...");
+            List<StoreItem> storeInventory = new List<StoreItem>();
+            switch (shop.ThisShopType)
+            {
+                case Shop.ShopType.System:
+                    var potentialInventoryItems = this.StoreItems.Where(item =>
+                    {
+                        var result = item.IsValidForAppearance(currentDate, starSystem.OwnerValue.Name, shop.ThisShopType, settings);
+                        this.logger.Debug($"[{item.Id}] - [{result.ToString()}]");
+                        return result;
+                    });
+                    break;
+            }
+
+            return storeInventory;
         }
     }
 }

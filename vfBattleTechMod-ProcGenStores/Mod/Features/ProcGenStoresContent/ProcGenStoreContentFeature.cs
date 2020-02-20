@@ -37,6 +37,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var owningSystemTags = ___system.Tags.ToList();
             var shopType = __instance.ThisShopType;
             var currentDate = ___Sim.CurrentDate;
+            var owningFaction = ___system.OwnerValue;
 
             var result = new ItemCollectionResult
             {

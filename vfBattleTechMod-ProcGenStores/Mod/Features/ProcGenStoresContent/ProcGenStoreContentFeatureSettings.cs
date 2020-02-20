@@ -5,21 +5,47 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 {
     public class ProcGenStoreContentFeatureSettings : ModFeatureSettingsBase
     {
-        public string StoreItemSourceFile { get; set; }
+        public string StoreItemSourceFile { get; set; } = "xlrp-store-content.xlsx";
         public bool CascadeRollsOnFail { get; set; } = true;
+
+        public BlackMarket BlackMarketSettings { get; set; } = new BlackMarket();
+
+        public FactionMarket FactionMarketSettings { get; set; } = new FactionMarket();
 
         public List<RarityBracket> RarityBrackets { get; set; } = new List<RarityBracket>() { new RarityBracket() };
         public List<PlanetTagModifier> PlanetTagModifiers { get; set; } = new List<PlanetTagModifier>() { new PlanetTagModifier() };
+
+        public class BlackMarket
+        {
+            public string BlackMarketMinBaseRarity { get; set; } = "VeryUncommon";
+            public string BlackMarketMaxBaseRarity { get; set; } = "PracticallyExtinct";
+
+            public double BlackMarketAppearanceModifier { get; set; } = 1.5;
+
+            public double BlackMarketQuantityModifier { get; set; } = 0.5;
+        }
+
+        public class FactionMarket
+        {
+            public string MinBaseRarity { get; set; } = "VeryUncommon";
+            public string MaxBaseRarity { get; set; } = "PracticallyExtinct";
+
+            public double AppearanceModifier { get; set; } = 1.5;
+
+            public double QuantityModifier { get; set; } = 0.5;
+        }
 
         public class RarityBracket
         {
             public string Name { get; set; } = string.Empty;
 
-            public float ChanceToAppear { get; set; } = -1;
+            public double ChanceToAppear { get; set; } = -1;
 
             public string Description { get; set; } = string.Empty;
 
             public QuantityBracket QuantityBracket { get; set; } = new QuantityBracket();
+
+            public int Order { get; set; }
         }
 
         public class QuantityBracket
@@ -33,9 +59,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         {
             public string Tag { get; set; } = string.Empty;
 
-            public float ChanceModifier { get; set; } = 1;
+            public decimal ChanceModifier { get; set; } = 1;
 
-            public float QuantityModifier { get; set; } = 1;
+            public decimal QuantityModifier { get; set; } = 1;
 
             public string Description { get; set; } = string.Empty;
 
