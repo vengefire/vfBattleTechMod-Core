@@ -37,12 +37,29 @@
         {
             Logger = logger;
             this.Directory = directory;
+
+            Logger.Debug($"Mod Feature [{this.Name}] - Default Settings [\r\n{JsonConvert.SerializeObject(this.Settings)}]");
+
             this.Settings = JsonConvert.DeserializeObject<TModFeatureSettings>(settings);
+            
+            if (!this.Settings.Enabled)
+            {
+                Logger.Debug($"Feature [{this.Name}] has been disabled with settings [{JsonConvert.SerializeObject(this.Settings)}]");
+                return;
+            }
+
+            if (!this.ValidateSettings())
+            {
+                Logger.Debug($"Feature [{this.Name}] has been disabled due to settings validation failure.");
+                return;
+            }
+            
             this.ExecutePatchDirectives(harmonyInstance);
             this.OnInitializeComplete();
-            Logger.Debug(
-                $"Feature [{this.Name}] initialized with settings [{JsonConvert.SerializeObject(this.Settings)}]");
+            Logger.Debug($"Feature [{this.Name}] initialized with settings [{JsonConvert.SerializeObject(this.Settings)}]");
         }
+
+        protected abstract bool ValidateSettings();
 
         public abstract void OnInitializeComplete();
 

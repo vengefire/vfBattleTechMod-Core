@@ -38,12 +38,19 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\BattleTech_Data\Managed\Assembly-CSharp.dll</HintPath>
     </Reference>
+    <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
+      <HintPath>..\packages\EPPlus.4.5.3.3\lib\net40\EPPlus.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\BattleTech_Data\Managed\Newtonsoft.Json.dll</HintPath>
     </Reference>
+    <Reference Include="PresentationCore" />
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Drawing" />
+    <Reference Include="System.Security" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -52,7 +59,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mod\Features\ProcGenStoresContent\Enums\RarityEnum.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItem.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemLoader.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemService.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeature.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeatureSettings.cs" />
     <Compile Include="Mod\ProcGenStoresMod.cs" />
@@ -67,12 +76,13 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="mod.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Mod\Features\ProcGenStoresContent\Logic\" />
     <Folder Include="Res\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -13,9 +13,24 @@ namespace vfBattleTechMod_Core.Utils
 
         public Logger(ILog logger, string directory, string moduleName)
         {
+            var logFileName = $"{moduleName}-log.txt";
+            var logFilePath = Path.Combine(directory, logFileName);
+
+            if (File.Exists(logFilePath))
+            {
+                try
+                {
+                    File.Delete(logFilePath);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogDebug($"Failed to delete existing log file [{logFilePath}]");
+                }
+            }
+
             this.logger = logger;
             this.logAppender = new FileLogAppender(
-                Path.Combine(directory, "log.txt"),
+                logFilePath,
                 FileLogAppender.WriteMode.INSTANT);
             HBS.Logging.Logger.AddAppender(moduleName, this.logAppender);
         }
