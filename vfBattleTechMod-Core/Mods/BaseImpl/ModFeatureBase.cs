@@ -17,17 +17,19 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             ModFeatureBase<TModFeatureSettings>.Myself = this;
         }
 
+        private static ModFeatureBase<TModFeatureSettings> _myself;
+
         protected static ModFeatureBase<TModFeatureSettings> Myself
         {
-            get => ModFeatureBase<TModFeatureSettings>.Myself;
+            get => ModFeatureBase<TModFeatureSettings>._myself;
             set
             {
-                if (ModFeatureBase<TModFeatureSettings>.Myself != null)
+                if (ModFeatureBase<TModFeatureSettings>._myself != null)
                 {
                     throw new InvalidProgramException($"Mod Feature [{ModFeatureBase<TModFeatureSettings>.Myself.Name}] has already been created. Only one may be instanced.");
                 }
 
-                ModFeatureBase<TModFeatureSettings>.Myself = value;
+                ModFeatureBase<TModFeatureSettings>._myself = value;
             }
         }
 

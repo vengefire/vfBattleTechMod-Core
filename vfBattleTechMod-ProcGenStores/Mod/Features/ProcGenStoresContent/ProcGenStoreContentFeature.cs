@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using BattleTech;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
@@ -9,9 +8,19 @@ using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 {
-    internal class ProcGenStoreContentFeature : ModFeatureBase<ProcGenStoreContentFeatureSettings>
+    public class ProcGenStoreContentFeature : ModFeatureBase<ProcGenStoreContentFeatureSettings>
     {
         private new static ProcGenStoreContentFeature Myself;
+
+        public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType = new Dictionary<BattleTechResourceType, ShopItemType>
+        {
+            { BattleTechResourceType.AmmunitionBoxDef, ShopItemType.AmmunitionBox },
+            { BattleTechResourceType.UpgradeDef, ShopItemType.Upgrade },
+            { BattleTechResourceType.HeatSinkDef, ShopItemType.HeatSink },
+            { BattleTechResourceType.JumpJetDef, ShopItemType.JumpJet },
+            { BattleTechResourceType.WeaponDef, ShopItemType.Weapon },
+            { BattleTechResourceType.MechDef, ShopItemType.Mech }
+        };
 
         public ProcGenStoreContentFeature()
             : base(ProcGenStoreContentFeature.GetPatchDirectives)
@@ -34,16 +43,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public override string Name => "Procedurally Generate Store Contents";
 
-        public List<BattleTechResourceType> BattleTechStoreResourceTypes => new List<BattleTechResourceType> { BattleTechResourceType.AmmunitionBoxDef, BattleTechResourceType.UpgradeDef, BattleTechResourceType.HeatSinkDef, BattleTechResourceType.JumpJetDef, BattleTechResourceType.WeaponDef };
-
-        public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType = new Dictionary<BattleTechResourceType, ShopItemType>()
-        {
-            {BattleTechResourceType.AmmunitionBoxDef, ShopItemType.AmmunitionBox},
-            {BattleTechResourceType.UpgradeDef, ShopItemType.Upgrade},
-            {BattleTechResourceType.HeatSinkDef, ShopItemType.HeatSink},
-            {BattleTechResourceType.JumpJetDef, ShopItemType.JumpJet},
-            {BattleTechResourceType.WeaponDef, ShopItemType.Weapon}
-        };
+        public static List<BattleTechResourceType> BattleTechStoreResourceTypes => new List<BattleTechResourceType> { BattleTechResourceType.AmmunitionBoxDef, BattleTechResourceType.UpgradeDef, BattleTechResourceType.HeatSinkDef, BattleTechResourceType.JumpJetDef, BattleTechResourceType.WeaponDef };
 
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
@@ -57,8 +57,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
             var planetTagModifiers = ModFeatureBase<ProcGenStoreContentFeatureSettings>.Myself.Settings.PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag)).ToList();
 
-            var storeItems = Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name, currentDate, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
-            var shopDefItems = storeItems.Select(item => { return new ShopDefItem(item.Id, Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity, item.Quantity == -1, false, 0); }).ToList();
+            var storeItems = ProcGenStoreContentFeature.Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name, currentDate, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
+            var shopDefItems = storeItems.Select(item => { return new ShopDefItem(item.Id, ProcGenStoreContentFeature.Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity, item.Quantity == -1, false, 0); }).ToList();
 
             var result = new ItemCollectionResult
             {
@@ -92,7 +92,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public override void OnInitializeComplete()
         {
-            this.StoreItemService = new StoreItemService(this.Settings.StoreItemSourceFile, this.Settings.RarityBrackets, this.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
+            this.StoreItemService = new StoreItemService(this.Settings.StoreItemSourceFile, this.Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
         }
     }
 }

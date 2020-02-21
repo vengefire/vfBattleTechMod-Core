@@ -81,7 +81,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
         [Test]
         public void TestStoreItemServiceBasicProcessing()
         {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var storeItemTypes = ProcGenStoreContentFeature.BattleTechStoreResourceTypes;
             var date = new DateTime(3025, 1, 1);
             var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
             var planetTags = new List<string>() { "planet_pop_large" };

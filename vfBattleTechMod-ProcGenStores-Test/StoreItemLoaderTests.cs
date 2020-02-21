@@ -18,7 +18,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var sourceFile = TestContext.CurrentContext.TestDirectory + @"/res/xlrp-store-content.xlsx";
             var settings = JsonHelpers.DeserializeFile(TestContext.CurrentContext.TestDirectory + @"/res/test-settings.json");
             var procGenSettings = settings["Procedurally Generate Store Contents"].ToObject<ProcGenStoreContentFeatureSettings>();
-            var storeItems = StoreItemLoader.LoadStoreItemsFromExcel(sourceFile, procGenSettings.RarityBrackets, new List<BattleTechResourceType>() { BattleTechResourceType.HeatSinkDef }, new log4NetLogger("vf-test"));
+            var storeItems = StoreItemLoader.LoadStoreItemsFromExcel(sourceFile, procGenSettings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, new log4NetLogger("vf-test"));
         }
     }
 }
