@@ -1,20 +1,25 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using BattleTech;
-using Harmony;
-using Newtonsoft.Json;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
+using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 {
     internal class ProcGenStoreContentFeature : ModFeatureBase<ProcGenStoreContentFeatureSettings>
     {
+        private new static ProcGenStoreContentFeature Myself;
+
         public ProcGenStoreContentFeature()
             : base(ProcGenStoreContentFeature.GetPatchDirectives)
         {
+            ProcGenStoreContentFeature.Myself = this;
         }
+
+        protected StoreItemService StoreItemService { get; set; }
 
         public static List<IModPatchDirective> GetPatchDirectives =>
             new List<IModPatchDirective>
@@ -29,6 +34,17 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public override string Name => "Procedurally Generate Store Contents";
 
+        public List<BattleTechResourceType> BattleTechStoreResourceTypes => new List<BattleTechResourceType> { BattleTechResourceType.AmmunitionBoxDef, BattleTechResourceType.UpgradeDef, BattleTechResourceType.HeatSinkDef, BattleTechResourceType.JumpJetDef, BattleTechResourceType.WeaponDef };
+
+        public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType = new Dictionary<BattleTechResourceType, ShopItemType>()
+        {
+            {BattleTechResourceType.AmmunitionBoxDef, ShopItemType.AmmunitionBox},
+            {BattleTechResourceType.UpgradeDef, ShopItemType.Upgrade},
+            {BattleTechResourceType.HeatSinkDef, ShopItemType.HeatSink},
+            {BattleTechResourceType.JumpJetDef, ShopItemType.JumpJet},
+            {BattleTechResourceType.WeaponDef, ShopItemType.Weapon}
+        };
+
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
             ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Injecting custom shop inventory...");
@@ -39,24 +55,17 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var currentDate = ___Sim.CurrentDate;
             var owningFaction = ___system.OwnerValue;
 
-            var planetTagModifiers = Myself.Settings.PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag));
+            var planetTagModifiers = ModFeatureBase<ProcGenStoreContentFeatureSettings>.Myself.Settings.PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag)).ToList();
+
+            var storeItems = Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name, currentDate, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
+            var shopDefItems = storeItems.Select(item => { return new ShopDefItem(item.Id, Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity, item.Quantity == -1, false, 0); }).ToList();
 
             var result = new ItemCollectionResult
             {
                 GUID = ___Sim.GenerateSimGameUID(),
                 callback = null,
                 itemCollectionID = "vf-Fake",
-                items = new List<ShopDefItem>
-                {
-                    new ShopDefItem(
-                        "Gear_HeatSink_Generic_Standard",
-                        ShopItemType.HeatSink,
-                        0.5f,
-                        666,
-                        false,
-                        false,
-                        666)
-                },
+                items = shopDefItems,
                 parentGUID = null,
                 pendingCount = 0
             };
@@ -69,17 +78,21 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         {
             if (!File.Exists(this.StoreItemSourceFilePath()))
             {
-                Logger.Debug($"{this.Name} failed settings validation, store items file [{this.StoreItemSourceFilePath()}] does not exist.");
+                ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"{this.Name} failed settings validation, store items file [{this.StoreItemSourceFilePath()}] does not exist.");
                 return false;
             }
 
             return true;
         }
 
-        public string StoreItemSourceFilePath() => Path.Combine(this.Directory, this.Settings.StoreItemSourceFile);
+        public string StoreItemSourceFilePath()
+        {
+            return Path.Combine(this.Directory, this.Settings.StoreItemSourceFile);
+        }
 
         public override void OnInitializeComplete()
         {
+            this.StoreItemService = new StoreItemService(this.Settings.StoreItemSourceFile, this.Settings.RarityBrackets, this.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
         }
     }
 }
