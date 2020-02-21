@@ -17,6 +17,8 @@
 
         TModFeatureSettings Settings { get; }
 
+        TModFeatureSettings DefaultSettings { get; }
+
         void Initialize(HarmonyInstance harmonyInstance, string settings, ILogger logger, string directory);
 
         void OnInitializeComplete();

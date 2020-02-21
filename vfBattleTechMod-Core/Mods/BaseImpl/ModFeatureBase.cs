@@ -44,6 +44,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
         public List<IModPatchDirective> PatchDirectives { get; }
 
         public TModFeatureSettings Settings { get; private set; }
+        public TModFeatureSettings DefaultSettings => new TModFeatureSettings();
 
         public virtual void Initialize(
             HarmonyInstance harmonyInstance,
@@ -53,8 +54,6 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
         {
             ModFeatureBase<TModFeatureSettings>.Logger = logger;
             this.Directory = directory;
-
-            ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Mod Feature [{this.Name}] - Default Settings [\r\n{JsonConvert.SerializeObject(this.Settings)}]");
 
             this.Settings = settings == null ? new TModFeatureSettings() : JsonHelpers.DeserializeObject<TModFeatureSettings>(settings);
 

@@ -2,6 +2,6 @@
 {
     public interface IModFeatureSettings : IModSettingsBase
     {
-        bool Enabled { get; }
+        bool Enabled { get; set; }
     }
 }

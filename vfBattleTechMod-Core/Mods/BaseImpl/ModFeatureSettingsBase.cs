@@ -4,6 +4,6 @@
 
     public abstract class ModFeatureSettingsBase : ModSettingsBase, IModFeatureSettings
     {
-        bool IModFeatureSettings.Enabled { get; } = false;
+        public bool Enabled { get; set; } = false;
     }
 }

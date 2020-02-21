@@ -1,7 +1,6 @@
 ﻿using System.IO;
 using Harmony;
 using NUnit.Framework;
-using vfBattleTechMod_ProcGenStores;
 using vfBattleTechMod_ProcGenStores.Mod;
 
 namespace vfBattleTechMod_ProcGenStores_Test
@@ -13,7 +12,8 @@ namespace vfBattleTechMod_ProcGenStores_Test
         public void TestModDefaultSettingsGeneration()
         {
             var settings = File.ReadAllText(TestContext.CurrentContext.TestDirectory + @"/res/test-settings.json");
-            var mod = new ProcGenStoresMod(HarmonyInstance.Create("vf-test"), Directory.GetCurrentDirectory(), settings, nameof(ProcGenStoresMod));
+            var mod = new ProcGenStoresMod(HarmonyInstance.Create("vf-test"), Directory.GetCurrentDirectory(), settings,
+                nameof(ProcGenStoresMod));
             var default_settings = mod.GenerateDefaultModSettings();
         }
     }

@@ -92,7 +92,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public override void OnInitializeComplete()
         {
-            this.StoreItemService = new StoreItemService(this.Settings.StoreItemSourceFile, this.Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
+            this.StoreItemService = new StoreItemService(Path.Combine(this.Directory, this.Settings.StoreItemSourceFile), this.Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
         }
     }
 }
