@@ -82,68 +82,79 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
                 logger.Debug("Column header index built.");
 
-                var storeItem = new StoreItem();
+                StoreItem storeItem;
 
                 (DateTime date, string faction) ExtractDateAndFaction(string value1)
                 {
                     var parts = value1.Split('|');
-                    var dateTime = new DateTime(Convert.ToInt32(parts[0]));
+                    var dateTime = new DateTime(Convert.ToInt32(parts[0]), 1, 1);
                     var faction1 = parts.Length > 1 ? parts[1] : null;
                     return (dateTime, faction1);
                 }
 
                 for (var rowIndex = 2; rowIndex < sheet.Dimension.Rows; ++rowIndex)
                 {
+                    // Shortcut check for NA availability to avoid unnecessary processing...
+                    var availability = sheet.Cells[rowIndex, columnHeaderIndex[szAvailability]].Value?.ToString();
+                    if (string.IsNullOrEmpty(availability) || availability == szNa)
+                    {
+                        logger.Debug($"Row [{rowIndex}] availability value [{availability ?? "NULL"}] is invalid. Skipping...");
+                        continue;
+                    }
+
+                    storeItem = new StoreItem();
                     var rowError = false;
                     foreach (var columnHeader in columnHeaderIndex.Keys)
                     {
                         var value = sheet.Cells[rowIndex, columnHeaderIndex[columnHeader]].Value?.ToString();
-                        if (string.IsNullOrEmpty(value))
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            if (value == szNa)
+                            {
+                                continue;
+                            }
+
+                            switch (columnHeader)
+                            {
+                                case szId:
+                                    storeItem.Id = value;
+                                    break;
+                                case szPrototypeDateFaction:
+                                {
+                                    var (date, faction) = ExtractDateAndFaction(value);
+                                    storeItem.PrototypeDate = date;
+                                    storeItem.PrototypeFaction = faction;
+                                    break;
+                                }
+                                case szProductionDateFaction:
+                                {
+                                    var (date, faction) = ExtractDateAndFaction(value);
+                                    storeItem.ProductionDate = date;
+                                    storeItem.ProductionFaction = faction;
+                                    break;
+                                }
+                                case szReintroDateFaction:
+                                {
+                                    var (date, faction) = ExtractDateAndFaction(value);
+                                    storeItem.ReintroductionDate = date;
+                                    storeItem.ReintroductionFaction = faction;
+                                    break;
+                                }
+                                case szExtinctionDate:
+                                    storeItem.ExtinctionDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                    break;
+                                case szCommonDate:
+                                    storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                    break;
+                                case szAvailability:
+                                    storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);
+                                    break;
+                            }
+                        }
+                        else
                         {
                             logger.Debug($"Null or empty value found on row [{rowIndex}] for column [{columnHeader}]...");
                             rowError = true;
-                        }
-
-                        if (value == szNa)
-                        {
-                            continue;
-                        }
-
-                        switch (columnHeader)
-                        {
-                            case szId:
-                                storeItem.Id = value;
-                                break;
-                            case szPrototypeDateFaction:
-                            {
-                                var (date, faction) = ExtractDateAndFaction(value);
-                                storeItem.PrototypeDate = date;
-                                storeItem.PrototypeFaction = faction;
-                                break;
-                            }
-                            case szProductionDateFaction:
-                            {
-                                var (date, faction) = ExtractDateAndFaction(value);
-                                storeItem.ProductionDate = date;
-                                storeItem.ProductionFaction = faction;
-                                break;
-                            }
-                            case szReintroDateFaction:
-                            {
-                                var (date, faction) = ExtractDateAndFaction(value);
-                                storeItem.ReintroductionDate = date;
-                                storeItem.ReintroductionFaction = faction;
-                                break;
-                            }
-                            case szExtinctionDate:
-                                storeItem.ExtinctionDate = new DateTime(Convert.ToInt32(value), 1, 1);
-                                break;
-                            case szCommonDate:
-                                storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
-                                break;
-                            case szAvailability:
-                                storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);
-                                break;
                         }
                     }
 

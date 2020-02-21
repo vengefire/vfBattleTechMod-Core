@@ -60,6 +60,7 @@
     <Compile Include="ProcGenStoreModTests.cs" />
     <Compile Include="StoreItemLoaderTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="StoreServiceTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -70,6 +71,7 @@
     <None Include="res\test-settings.json">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    <None Include="res\test-store-items.json" />
     <None Include="res\xlrp-store-content.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

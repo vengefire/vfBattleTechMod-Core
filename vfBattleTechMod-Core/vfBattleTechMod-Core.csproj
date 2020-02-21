@@ -76,6 +76,7 @@
     <Compile Include="Utils\Interfaces\ILogger.cs" />
     <Compile Include="Utils\HbsLogger.cs" />
     <Compile Include="Utils\log4NetLogger.cs" />
+    <Compile Include="Utils\NullLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

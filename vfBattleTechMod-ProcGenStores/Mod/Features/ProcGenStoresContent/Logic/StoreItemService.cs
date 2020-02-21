@@ -18,23 +18,32 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             this.StoreItems = StoreItemLoader.LoadStoreItemsFromExcel(storeItemSourceFilePath, rarityBrackets, storeResourceTypes, logger);
         }
 
-        public List<StoreItem> GenerateItemsForStore(Shop shop, StarSystem starSystem, DateTime currentDate, List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers, ProcGenStoreContentFeatureSettings settings)
+        public List<StoreItem> GenerateItemsForStore(Shop.ShopType shopType, string starSystemName, string ownerName, DateTime currentDate, List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers, ProcGenStoreContentFeatureSettings settings)
         {
-            this.logger.Debug($"Generating shop inventory for [{starSystem.Name} - {shop.ThisShopType.ToString()} - {starSystem.OwnerValue.Name}]...");
+            this.logger.Debug($"Generating shop inventory for [{starSystemName} - {shopType.ToString()} - {ownerName}]...");
             List<StoreItem> storeInventory = new List<StoreItem>();
-            switch (shop.ThisShopType)
+            var potentialInventoryItems = this.IdentifyPotentialInventoryItems(shopType, ownerName, currentDate, settings);
+
+            return storeInventory;
+        }
+
+        public List<StoreItem> IdentifyPotentialInventoryItems(Shop.ShopType shopType, string ownerName, DateTime currentDate, ProcGenStoreContentFeatureSettings settings)
+        {
+            List<StoreItem> potentialInventoryItems = new List<StoreItem>();
+            switch (shopType)
             {
                 case Shop.ShopType.System:
-                    var potentialInventoryItems = this.StoreItems.Where(item =>
-                    {
-                        var result = item.IsValidForAppearance(currentDate, starSystem.OwnerValue.Name, shop.ThisShopType, settings);
-                        this.logger.Debug($"[{item.Id}] - [{result.ToString()}]");
-                        return result;
-                    });
+                    potentialInventoryItems = this.StoreItems.Where(
+                        item =>
+                        {
+                            var result = item.IsValidForAppearance(currentDate, ownerName, shopType, settings);
+                            this.logger.Debug($"[{item.Id}] - [{result.ToString()}]");
+                            return result;
+                        }).ToList();
                     break;
             }
 
-            return storeInventory;
+            return potentialInventoryItems;
         }
     }
 }
