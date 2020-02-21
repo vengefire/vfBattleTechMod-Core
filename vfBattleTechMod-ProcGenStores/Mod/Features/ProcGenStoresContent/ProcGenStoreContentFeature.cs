@@ -39,6 +39,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var currentDate = ___Sim.CurrentDate;
             var owningFaction = ___system.OwnerValue;
 
+            var planetTagModifiers = Myself.Settings.PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag));
+
             var result = new ItemCollectionResult
             {
                 GUID = ___Sim.GenerateSimGameUID(),

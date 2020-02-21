@@ -95,10 +95,11 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 for (var rowIndex = 2; rowIndex < sheet.Dimension.Rows; ++rowIndex)
                 {
                     // Shortcut check for NA availability to avoid unnecessary processing...
+                    var id = sheet.Cells[rowIndex, columnHeaderIndex[szId]].Value?.ToString();
                     var availability = sheet.Cells[rowIndex, columnHeaderIndex[szAvailability]].Value?.ToString();
                     if (string.IsNullOrEmpty(availability) || availability == szNa)
                     {
-                        logger.Debug($"Row [{rowIndex}] availability value [{availability ?? "NULL"}] is invalid. Skipping...");
+                        logger.Debug($"Row [{rowIndex}] - Id [{id ?? "NULL"}] availability value [{availability ?? "NULL"}] is invalid. Skipping...");
                         continue;
                     }
 

@@ -65,9 +65,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         {
             public string Tag { get; set; } = string.Empty;
 
-            public decimal ChanceModifier { get; set; } = 1;
+            public double ChanceModifier { get; set; } = 1;
 
-            public decimal QuantityModifier { get; set; } = 1;
+            public double QuantityModifier { get; set; } = 1;
 
             public string Description { get; set; } = string.Empty;
 

@@ -33,8 +33,8 @@
         "Description": "",
         "QuantityBracket": {
           "Name": "VeryCommon",
-          "LowCount": 25,
-          "HighCount": 50
+          "LowCount": 10,
+          "HighCount": 25
         },
         "Order": 1
       },
@@ -44,8 +44,8 @@
         "Description": "",
         "QuantityBracket": {
           "Name": "Common",
-          "LowCount": 10,
-          "HighCount": 25
+          "LowCount": 5,
+          "HighCount": 10
         },
         "Order": 2
       },
@@ -55,8 +55,8 @@
         "Description": "",
         "QuantityBracket": {
           "Name": "Uncommon",
-          "LowCount": 5,
-          "HighCount": 10
+          "LowCount": 1,
+          "HighCount": 5
         },
         "Order": 3
       },
@@ -66,8 +66,8 @@
         "Description": "",
         "QuantityBracket": {
           "Name": "VeryUncommon",
-          "LowCount": 5,
-          "HighCount": 10
+          "LowCount": 1,
+          "HighCount": 2
         },
         "Order": 4
       },
@@ -78,7 +78,7 @@
         "QuantityBracket": {
           "Name": "Rare",
           "LowCount": 1,
-          "HighCount": 3
+          "HighCount": 2
         },
         "Order": 5
       },

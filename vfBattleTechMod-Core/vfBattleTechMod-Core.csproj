@@ -60,6 +60,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Helpers\JsonHelpers.cs" />
     <Compile Include="Mods\BaseImpl\ModSettingsBase.cs" />
     <Compile Include="Mods\Interfaces\IModPatchDirective.cs" />
@@ -82,5 +83,6 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

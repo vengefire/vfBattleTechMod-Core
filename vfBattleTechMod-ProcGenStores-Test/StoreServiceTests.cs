@@ -84,7 +84,9 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
             var date = new DateTime(3025, 1, 1);
             var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance", "vengefire", date, this.procGenSettings.PlanetTagModifiers, this.procGenSettings);
+            var planetTags = new List<string>() { "planet_pop_large" };
+            var planetModifiers = this.procGenSettings.PlanetTagModifiers.Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
+            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance", "vengefire", date, planetModifiers, this.procGenSettings);
         }
     }
 }
