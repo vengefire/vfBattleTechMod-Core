@@ -5,13 +5,13 @@ using vfBattleTechMod_Core.Utils.Interfaces;
 
 namespace vfBattleTechMod_Core.Utils
 {
-    public class Logger : ILogger
+    public class HbsLogger : ILogger
     {
         private readonly ILogAppender logAppender;
 
         private readonly ILog logger;
 
-        public Logger(ILog logger, string directory, string moduleName)
+        public HbsLogger(ILog logger, string directory, string moduleName)
         {
             var logFileName = $"{moduleName}-log.txt";
             var logFilePath = Path.Combine(directory, logFileName);

@@ -1,18 +1,14 @@
-﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿using System.Collections.Generic;
+using Harmony;
+using HBS.Logging;
+using vfBattleTechMod_Core.Helpers;
+using vfBattleTechMod_Core.Mods.Interfaces;
+using vfBattleTechMod_Core.Utils;
+using vfBattleTechMod_Core.Utils.Interfaces;
+
+namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
-    using System.Collections.Generic;
-
-    using Harmony;
-
-    using HBS.Logging;
-
-    using vfBattleTechMod_Core.Helpers;
-    using vfBattleTechMod_Core.Mods.Interfaces;
-    using vfBattleTechMod_Core.Utils.Interfaces;
-
-    using Logger = vfBattleTechMod_Core.Utils.Logger;
-
-    public abstract class ModBase : IBattleTechMod
+    public abstract class ModBase<TModSettings> : IBattleTechMod<TModSettings> where TModSettings : IModSettings, new()
     {
         protected ModBase(
             HarmonyInstance harmonyInstance,
@@ -21,10 +17,10 @@
             string name,
             List<IModFeature<IModFeatureSettings>> modFeatures)
         {
-            this.InitialiseLogging(directory);
             this.Name = name;
             this.Directory = directory;
             this.ModFeatures = modFeatures;
+            this.InitialiseLogging(directory);
             this.Logger.Debug($"Booting up [{this.Name}] at[{this.Directory}], with settings \r\n{settings}]...");
             this.Initialize(harmonyInstance, settings);
         }
@@ -37,6 +33,16 @@
 
         public string Name { get; }
 
+        public string GenerateDefaultModSettings()
+        {
+            var settingsList = new List<string>();
+            settingsList.Add(this.ModSettings.Serialize());
+            this.ModFeatures.ForEach(feature => settingsList.Add(feature.Settings.Serialize()));
+            return settingsList.Join();
+        }
+
+        public TModSettings ModSettings { get; private set; }
+
         private ILog GetHbsLogger()
         {
             var hbsLogger = HBS.Logging.Logger.GetLogger(this.Name, LogLevel.Debug);
@@ -46,19 +52,18 @@
 
         private void InitialiseLogging(string directory)
         {
-            var hbsLogger = this.GetHbsLogger();
-            hbsLogger.LogDebug($"Initializing logging for [{this.Name}]");
-            this.Logger = new Logger(hbsLogger, directory, this.Name);
+            this.Logger = new log4NetLogger(this.Name);
         }
 
         private void Initialize(HarmonyInstance harmonyInstance, string settings)
         {
             this.Logger.Debug("Initializing Features...");
+            this.ModSettings = JsonHelpers.Deserialize<TModSettings>(settings) ?? new TModSettings();
             var jsonSettings = JsonHelpers.Deserialize(settings);
             this.ModFeatures.ForEach(
                 feature => feature.Initialize(
                     harmonyInstance,
-                    jsonSettings[feature.Name].ToString(),
+                    jsonSettings?[feature.Name]?.ToString(),
                     this.Logger,
                     this.Directory));
             this.Logger.Debug("Feature initialization complete.");

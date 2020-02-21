@@ -5,19 +5,22 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 {
     public class ProcGenStoreContentFeatureSettings : ModFeatureSettingsBase
     {
-        public string StoreItemSourceFile { get; set; } = "xlrp-store-content.xlsx";
+        public string StoreItemSourceFile { get; set; } = string.Empty;
+
         public bool CascadeRollsOnFail { get; set; } = true;
 
         public BlackMarket BlackMarketSettings { get; set; } = new BlackMarket();
 
         public FactionMarket FactionMarketSettings { get; set; } = new FactionMarket();
 
-        public List<RarityBracket> RarityBrackets { get; set; } = new List<RarityBracket>() { new RarityBracket() };
-        public List<PlanetTagModifier> PlanetTagModifiers { get; set; } = new List<PlanetTagModifier>() { new PlanetTagModifier() };
+        public List<RarityBracket> RarityBrackets { get; set; } = new List<RarityBracket> { new RarityBracket() };
+
+        public List<PlanetTagModifier> PlanetTagModifiers { get; set; } = new List<PlanetTagModifier> { new PlanetTagModifier() };
 
         public class BlackMarket
         {
             public string BlackMarketMinBaseRarity { get; set; } = "VeryUncommon";
+
             public string BlackMarketMaxBaseRarity { get; set; } = "PracticallyExtinct";
 
             public double BlackMarketAppearanceModifier { get; set; } = 1.5;
@@ -28,6 +31,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         public class FactionMarket
         {
             public string MinBaseRarity { get; set; } = "VeryUncommon";
+
             public string MaxBaseRarity { get; set; } = "PracticallyExtinct";
 
             public double AppearanceModifier { get; set; } = 1.5;
@@ -51,7 +55,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         public class QuantityBracket
         {
             public string Name { get; set; } = string.Empty;
+
             public int LowCount { get; set; } = 0;
+
             public int HighCount { get; set; } = 0;
         }
 
@@ -66,6 +72,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             public string Description { get; set; } = string.Empty;
 
             public bool AppliesToStock { get; set; } = true;
+
             public bool AppliesToLosTech { get; set; } = false;
 
             public bool AppliesToFaction { get; set; } = false;

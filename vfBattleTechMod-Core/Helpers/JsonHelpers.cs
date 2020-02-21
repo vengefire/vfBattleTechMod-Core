@@ -22,6 +22,18 @@
             return jsonObject;
         }
 
+        public static TObject Deserialize<TObject>(string jsonString)
+        {
+            var commasAdded = AddMissingCommas(jsonString);
+            var typedObject = JsonConvert.DeserializeObject<TObject>(commasAdded);
+            return typedObject;
+        }
+
+        public static TObject DeserializeObject<TObject>(string jsonString)
+        {
+            return Deserialize<TObject>(jsonString);
+        }
+
         public static JObject DeserializeFile(string filePath)
         {
             return Deserialize(File.ReadAllText(filePath));

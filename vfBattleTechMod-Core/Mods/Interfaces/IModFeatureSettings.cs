@@ -1,6 +1,6 @@
 ﻿namespace vfBattleTechMod_Core.Mods.Interfaces
 {
-    public interface IModFeatureSettings
+    public interface IModFeatureSettings : IModSettingsBase
     {
         bool Enabled { get; }
     }

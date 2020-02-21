@@ -2,7 +2,7 @@
 {
     using vfBattleTechMod_Core.Mods.Interfaces;
 
-    public class ModFeatureSettingsBase : IModFeatureSettings
+    public abstract class ModFeatureSettingsBase : ModSettingsBase, IModFeatureSettings
     {
         bool IModFeatureSettings.Enabled { get; } = false;
     }

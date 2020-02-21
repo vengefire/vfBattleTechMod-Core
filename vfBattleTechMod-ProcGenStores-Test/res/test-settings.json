@@ -1,0 +1,45 @@
+﻿{
+  "SomeCoolSetting": "DefaultCoolSetting",
+  "Procedurally Generate Store Contents":
+  {
+    "StoreItemSourceFile": "xlrp-store-content.xlsx",
+    "CascadeRollsOnFail": true,
+    "BlackMarketSettings": {
+      "BlackMarketMinBaseRarity": "VeryUncommon",
+      "BlackMarketMaxBaseRarity": "PracticallyExtinct",
+      "BlackMarketAppearanceModifier": 1.5,
+      "BlackMarketQuantityModifier": 0.5
+    },
+    "FactionMarketSettings": {
+      "MinBaseRarity": "VeryUncommon",
+      "MaxBaseRarity": "PracticallyExtinct",
+      "AppearanceModifier": 1.5,
+      "QuantityModifier": 0.5
+    },
+    "RarityBrackets": [
+      {
+        "Name": "",
+        "ChanceToAppear": -1.0,
+        "Description": "",
+        "QuantityBracket": {
+          "Name": "",
+          "LowCount": 0,
+          "HighCount": 0
+        },
+        "Order": 0
+      }
+    ],
+    "PlanetTagModifiers": [
+      {
+        "Tag": "",
+        "ChanceModifier": 1.0,
+        "QuantityModifier": 1.0,
+        "Description": "",
+        "AppliesToStock": true,
+        "AppliesToLosTech": false,
+        "AppliesToFaction": false
+      }
+    ]
+  }
+
+}

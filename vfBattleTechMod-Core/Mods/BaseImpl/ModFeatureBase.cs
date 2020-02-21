@@ -1,4 +1,6 @@
-﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿using vfBattleTechMod_Core.Helpers;
+
+namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
     using System.Collections.Generic;
 
@@ -10,7 +12,7 @@
     using vfBattleTechMod_Core.Utils.Interfaces;
 
     public abstract class ModFeatureBase<TModFeatureSettings> : IModFeature<TModFeatureSettings>
-        where TModFeatureSettings : IModFeatureSettings
+        where TModFeatureSettings : IModFeatureSettings, new()
     {
         protected ModFeatureBase(List<IModPatchDirective> patchDirectives)
         {
@@ -40,7 +42,7 @@
 
             Logger.Debug($"Mod Feature [{this.Name}] - Default Settings [\r\n{JsonConvert.SerializeObject(this.Settings)}]");
 
-            this.Settings = JsonConvert.DeserializeObject<TModFeatureSettings>(settings);
+            this.Settings = settings == null ? new TModFeatureSettings() : JsonHelpers.DeserializeObject<TModFeatureSettings>(settings);
             
             if (!this.Settings.Enabled)
             {
