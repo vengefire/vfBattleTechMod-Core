@@ -49,6 +49,36 @@ namespace vfBattleTechMod_ProcGenStores_Test
         }
 
         [Test]
+        public void TestStoreItemPotentialsCorrectlyIncludesPrototypeTechForLateDateAndFaction()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
+            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", date, this.procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesPrototypeTechForLateDateAndFaction()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
+            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, this.procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesNaTech()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var date = new DateTime(3100, 1, 1);
+            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
+            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, this.procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.Id == "HeatSink_Template"));
+        }
+
+        [Test]
         public void TestStoreItemServiceBasicProcessing()
         {
             var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
