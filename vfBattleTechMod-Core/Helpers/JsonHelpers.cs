@@ -1,11 +1,10 @@
-﻿namespace vfBattleTechMod_Core.Helpers
+﻿using System.IO;
+using System.Text.RegularExpressions;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
+
+namespace vfBattleTechMod_Core.Helpers
 {
-    using System.IO;
-    using System.Text.RegularExpressions;
-
-    using Newtonsoft.Json;
-    using Newtonsoft.Json.Linq;
-
     public class JsonHelpers
     {
         public static string AddMissingCommas(string jsonString)
@@ -18,7 +17,7 @@
         public static JObject Deserialize(string jsonString)
         {
             var commasAdded = AddMissingCommas(jsonString);
-            var jsonObject = (JObject)JsonConvert.DeserializeObject(commasAdded);
+            var jsonObject = (JObject) JsonConvert.DeserializeObject(commasAdded);
             return jsonObject;
         }
 
@@ -46,7 +45,7 @@
                 using (var stringWriter = new StringWriter())
                 {
                     var jsonReader = new JsonTextReader(stringReader);
-                    var jsonWriter = new JsonTextWriter(stringWriter) { Formatting = Formatting.Indented };
+                    var jsonWriter = new JsonTextWriter(stringWriter) {Formatting = Formatting.Indented};
                     jsonWriter.WriteToken(jsonReader);
                     return stringWriter.ToString();
                 }

@@ -23,59 +23,73 @@ namespace vfBattleTechMod_ProcGenStores_Test
         [OneTimeSetUp]
         public void Init()
         {
-            this.sourceFile = TestContext.CurrentContext.TestDirectory + @"/res/xlrp-store-content.xlsx";
-            this.settings = JsonHelpers.DeserializeFile(TestContext.CurrentContext.TestDirectory + @"/res/test-settings.json");
-            this.procGenSettings = this.settings["Procedurally Generate Store Contents"].ToObject<ProcGenStoreContentFeatureSettings>();
+            sourceFile = TestContext.CurrentContext.TestDirectory + @"/res/xlrp-store-content.xlsx";
+            settings = JsonHelpers.DeserializeFile(
+                TestContext.CurrentContext.TestDirectory + @"/res/test-settings.json");
+            procGenSettings = settings["Procedurally Generate Store Contents"]
+                .ToObject<ProcGenStoreContentFeatureSettings>();
         }
 
         [Test]
         public void TestStoreItemPotentialsCorrectlyExcludeFutureTechForEarlyDate()
         {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
             var date = new DateTime(3025, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date, this.procGenSettings);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
+                    procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_compact_center"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesNaTech()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3100, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.Id == "HeatSink_Template"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesPrototypeTechForLateDateAndFaction()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
         }
 
         [Test]
         public void TestStoreItemPotentialsCorrectlyIncludesFutureTechForLateDate()
         {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
             var date = new DateTime(3100, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date, this.procGenSettings);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
+                    procGenSettings);
             Assert.IsTrue(potentialInventory.Any(item => item.Id == "emod_engineslots_compact_center"));
         }
 
         [Test]
         public void TestStoreItemPotentialsCorrectlyIncludesPrototypeTechForLateDateAndFaction()
         {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
             var date = new DateTime(3036, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", date, this.procGenSettings);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", date, procGenSettings);
             Assert.IsTrue(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
-        }
-
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesPrototypeTechForLateDateAndFaction()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, this.procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
-        }
-
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesNaTech()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> { BattleTechResourceType.HeatSinkDef };
-            var date = new DateTime(3100, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var potentialInventory = storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, this.procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.Id == "HeatSink_Template"));
         }
 
         [Test]
@@ -83,10 +97,13 @@ namespace vfBattleTechMod_ProcGenStores_Test
         {
             var storeItemTypes = ProcGenStoreContentFeature.BattleTechStoreResourceTypes;
             var date = new DateTime(3025, 1, 1);
-            var storeItemService = new StoreItemService(this.sourceFile, this.procGenSettings.RarityBrackets, storeItemTypes, this.logger);
-            var planetTags = new List<string>() { "planet_pop_large" };
-            var planetModifiers = this.procGenSettings.PlanetTagModifiers.Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
-            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance", "vengefire", date, planetModifiers, this.procGenSettings);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var planetTags = new List<string> {"planet_pop_large"};
+            var planetModifiers = procGenSettings.PlanetTagModifiers
+                .Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
+            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance",
+                "vengefire", date, planetModifiers, procGenSettings);
         }
     }
 }

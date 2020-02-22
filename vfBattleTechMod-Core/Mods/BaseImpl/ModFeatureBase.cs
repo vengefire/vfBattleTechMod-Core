@@ -11,25 +11,26 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
     public abstract class ModFeatureBase<TModFeatureSettings> : IModFeature<TModFeatureSettings>
         where TModFeatureSettings : IModFeatureSettings, new()
     {
+        private static ModFeatureBase<TModFeatureSettings> _myself;
+
         protected ModFeatureBase(List<IModPatchDirective> patchDirectives)
         {
-            this.PatchDirectives = patchDirectives;
-            ModFeatureBase<TModFeatureSettings>.Myself = this;
+            PatchDirectives = patchDirectives;
+            Myself = this;
         }
-
-        private static ModFeatureBase<TModFeatureSettings> _myself;
 
         protected static ModFeatureBase<TModFeatureSettings> Myself
         {
-            get => ModFeatureBase<TModFeatureSettings>._myself;
+            get => _myself;
             set
             {
-                if (ModFeatureBase<TModFeatureSettings>._myself != null)
+                if (_myself != null)
                 {
-                    throw new InvalidProgramException($"Mod Feature [{ModFeatureBase<TModFeatureSettings>.Myself.Name}] has already been created. Only one may be instanced.");
+                    throw new InvalidProgramException(
+                        $"Mod Feature [{Myself.Name}] has already been created. Only one may be instanced.");
                 }
 
-                ModFeatureBase<TModFeatureSettings>._myself = value;
+                _myself = value;
             }
         }
 
@@ -37,7 +38,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         protected string Directory { get; private set; }
 
-        public bool Enabled => this.Settings.Enabled;
+        public bool Enabled => Settings.Enabled;
 
         public abstract string Name { get; }
 
@@ -52,26 +53,29 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             ILogger logger,
             string directory)
         {
-            ModFeatureBase<TModFeatureSettings>.Logger = logger;
-            this.Directory = directory;
+            Logger = logger;
+            Directory = directory;
 
-            this.Settings = settings == null ? new TModFeatureSettings() : JsonHelpers.DeserializeObject<TModFeatureSettings>(settings);
+            Settings = settings == null
+                ? new TModFeatureSettings()
+                : JsonHelpers.DeserializeObject<TModFeatureSettings>(settings);
 
-            if (!this.Settings.Enabled)
+            if (!Settings.Enabled)
             {
-                ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Feature [{this.Name}] has been disabled with settings [{JsonConvert.SerializeObject(this.Settings)}]");
+                Logger.Debug(
+                    $"Feature [{Name}] has been disabled with settings [{JsonConvert.SerializeObject(Settings)}]");
                 return;
             }
 
-            if (!this.ValidateSettings())
+            if (!ValidateSettings())
             {
-                ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Feature [{this.Name}] has been disabled due to settings validation failure.");
+                Logger.Debug($"Feature [{Name}] has been disabled due to settings validation failure.");
                 return;
             }
 
-            this.ExecutePatchDirectives(harmonyInstance);
-            this.OnInitializeComplete();
-            ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Feature [{this.Name}] initialized with settings [{JsonConvert.SerializeObject(this.Settings)}]");
+            ExecutePatchDirectives(harmonyInstance);
+            OnInitializeComplete();
+            Logger.Debug($"Feature [{Name}] initialized with settings [{JsonConvert.SerializeObject(Settings)}]");
         }
 
         public abstract void OnInitializeComplete();
@@ -80,7 +84,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         private void ExecutePatchDirectives(HarmonyInstance harmonyInstance)
         {
-            this.PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, ModFeatureBase<TModFeatureSettings>.Logger));
+            PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, Logger));
         }
     }
 }

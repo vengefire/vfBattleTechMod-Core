@@ -1,12 +1,10 @@
-﻿namespace vfBattleTechMod_Core.Mods.BaseImpl
+﻿using System.Reflection;
+using Harmony;
+using vfBattleTechMod_Core.Mods.Interfaces;
+using vfBattleTechMod_Core.Utils.Interfaces;
+
+namespace vfBattleTechMod_Core.Mods.BaseImpl
 {
-    using System.Reflection;
-
-    using Harmony;
-
-    using vfBattleTechMod_Core.Mods.Interfaces;
-    using vfBattleTechMod_Core.Utils.Interfaces;
-
     public class ModPatchDirective : IModPatchDirective
     {
         public ModPatchDirective(
@@ -16,11 +14,11 @@
             MethodInfo transpilerMethodType,
             int priority)
         {
-            this.TargetMethodType = targetMethodType;
-            this.PrefixMethodType = prefixMethodType;
-            this.PostfixMethodType = postfixMethodType;
-            this.TranspilerMethodType = transpilerMethodType;
-            this.Priority = priority;
+            TargetMethodType = targetMethodType;
+            PrefixMethodType = prefixMethodType;
+            PostfixMethodType = postfixMethodType;
+            TranspilerMethodType = transpilerMethodType;
+            Priority = priority;
         }
 
         public MethodInfo PostfixMethodType { get; }
@@ -32,6 +30,15 @@
         public MethodInfo TargetMethodType { get; }
 
         public MethodInfo TranspilerMethodType { get; }
+
+        public void Initialize(HarmonyInstance harmonyInstance, ILogger logger)
+        {
+            harmonyInstance.Patch(
+                TargetMethodType,
+                PrefixMethodType == null ? null : new HarmonyMethod(PrefixMethodType),
+                PostfixMethodType == null ? null : new HarmonyMethod(PostfixMethodType),
+                TranspilerMethodType == null ? null : new HarmonyMethod(TranspilerMethodType));
+        }
 
         public static void JustDoNothing()
         {
@@ -60,15 +67,6 @@
         public static MethodInfo JustReturnTrueInfo()
         {
             return typeof(ModPatchDirective).GetMethod("JustReturnTrue");
-        }
-
-        public void Initialize(HarmonyInstance harmonyInstance, ILogger logger)
-        {
-            harmonyInstance.Patch(
-                this.TargetMethodType,
-                this.PrefixMethodType == null ? null : new HarmonyMethod(this.PrefixMethodType),
-                this.PostfixMethodType == null ? null : new HarmonyMethod(this.PostfixMethodType),
-                this.TranspilerMethodType == null ? null : new HarmonyMethod(this.TranspilerMethodType));
         }
     }
 }

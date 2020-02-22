@@ -13,9 +13,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public FactionMarket FactionMarketSettings { get; set; } = new FactionMarket();
 
-        public List<RarityBracket> RarityBrackets { get; set; } = new List<RarityBracket> { new RarityBracket() };
+        public List<RarityBracket> RarityBrackets { get; set; } = new List<RarityBracket> {new RarityBracket()};
 
-        public List<PlanetTagModifier> PlanetTagModifiers { get; set; } = new List<PlanetTagModifier> { new PlanetTagModifier() };
+        public List<PlanetTagModifier> PlanetTagModifiers { get; set; } =
+            new List<PlanetTagModifier> {new PlanetTagModifier()};
 
         public class BlackMarket
         {

@@ -7,7 +7,8 @@ namespace vfBattleTechMod_Core.Extensions
 {
     public static class ObjectExtensions
     {
-        private static readonly MethodInfo CloneMethod = typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
+        private static readonly MethodInfo CloneMethod =
+            typeof(object).GetMethod("MemberwiseClone", BindingFlags.NonPublic | BindingFlags.Instance);
 
         public static bool IsPrimitive(this Type type)
         {
@@ -21,7 +22,7 @@ namespace vfBattleTechMod_Core.Extensions
 
         public static object Copy(this object originalObject)
         {
-            return ObjectExtensions.InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
+            return InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
         }
 
         private static object InternalCopy(object originalObject, IDictionary<object, object> visited)
@@ -47,37 +48,43 @@ namespace vfBattleTechMod_Core.Extensions
                 return null;
             }
 
-            var cloneObject = ObjectExtensions.CloneMethod.Invoke(originalObject, null);
+            var cloneObject = CloneMethod.Invoke(originalObject, null);
             if (typeToReflect.IsArray)
             {
                 var arrayType = typeToReflect.GetElementType();
                 if (arrayType.IsPrimitive() == false)
                 {
-                    var clonedArray = (Array)cloneObject;
-                    clonedArray.ForEach((array, indices) => array.SetValue(ObjectExtensions.InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                    var clonedArray = (Array) cloneObject;
+                    clonedArray.ForEach((array, indices) =>
+                        array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
                 }
             }
 
             visited.Add(originalObject, cloneObject);
-            ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect);
-            ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
+            CopyFields(originalObject, visited, cloneObject, typeToReflect);
+            RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
         }
 
-        private static void RecursiveCopyBaseTypePrivateFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
+        private static void RecursiveCopyBaseTypePrivateFields(object originalObject,
+            IDictionary<object, object> visited, object cloneObject, Type typeToReflect)
         {
             if (typeToReflect.BaseType != null)
             {
-                ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
-                ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType, BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
+                RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
+                CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType,
+                    BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
             }
         }
 
-        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject, Type typeToReflect, BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
+        private static void CopyFields(object originalObject, IDictionary<object, object> visited, object cloneObject,
+            Type typeToReflect,
+            BindingFlags bindingFlags = BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public |
+                                        BindingFlags.FlattenHierarchy, Func<FieldInfo, bool> filter = null)
         {
             foreach (var fieldInfo in typeToReflect.GetFields(bindingFlags))
             {
-                if ((filter != null) && (filter(fieldInfo) == false))
+                if (filter != null && filter(fieldInfo) == false)
                 {
                     continue;
                 }
@@ -88,14 +95,14 @@ namespace vfBattleTechMod_Core.Extensions
                 }
 
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = ObjectExtensions.InternalCopy(originalFieldValue, visited);
+                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
 
         public static T Copy<T>(this T original)
         {
-            return (T)((object)original).Copy();
+            return (T) ((object) original).Copy();
         }
     }
 
@@ -103,7 +110,7 @@ namespace vfBattleTechMod_Core.Extensions
     {
         public override bool Equals(object x, object y)
         {
-            return object.ReferenceEquals(x, y);
+            return ReferenceEquals(x, y);
         }
 
         public override int GetHashCode(object obj)
@@ -143,25 +150,25 @@ namespace vfBattleTechMod_Core.Extensions
 
             public ArrayTraverse(Array array)
             {
-                this.maxLengths = new int[array.Rank];
+                maxLengths = new int[array.Rank];
                 for (var i = 0; i < array.Rank; ++i)
                 {
-                    this.maxLengths[i] = array.GetLength(i) - 1;
+                    maxLengths[i] = array.GetLength(i) - 1;
                 }
 
-                this.Position = new int[array.Rank];
+                Position = new int[array.Rank];
             }
 
             public bool Step()
             {
-                for (var i = 0; i < this.Position.Length; ++i)
+                for (var i = 0; i < Position.Length; ++i)
                 {
-                    if (this.Position[i] < this.maxLengths[i])
+                    if (Position[i] < maxLengths[i])
                     {
-                        this.Position[i]++;
+                        Position[i]++;
                         for (var j = 0; j < i; j++)
                         {
-                            this.Position[j] = 0;
+                            Position[j] = 0;
                         }
 
                         return true;

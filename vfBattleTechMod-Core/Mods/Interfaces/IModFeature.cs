@@ -1,11 +1,9 @@
-﻿namespace vfBattleTechMod_Core.Mods.Interfaces
+﻿using System.Collections.Generic;
+using Harmony;
+using vfBattleTechMod_Core.Utils.Interfaces;
+
+namespace vfBattleTechMod_Core.Mods.Interfaces
 {
-    using System.Collections.Generic;
-
-    using Harmony;
-
-    using vfBattleTechMod_Core.Utils.Interfaces;
-
     public interface IModFeature<out TModFeatureSettings>
         where TModFeatureSettings : IModFeatureSettings
     {

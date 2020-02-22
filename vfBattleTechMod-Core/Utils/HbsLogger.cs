@@ -29,20 +29,20 @@ namespace vfBattleTechMod_Core.Utils
             }
 
             this.logger = logger;
-            this.logAppender = new FileLogAppender(
+            logAppender = new FileLogAppender(
                 logFilePath,
                 FileLogAppender.WriteMode.INSTANT);
-            HBS.Logging.Logger.AddAppender(moduleName, this.logAppender);
+            Logger.AddAppender(moduleName, logAppender);
         }
 
         public void Debug(string message)
         {
-            this.logger.LogDebug(message);
+            logger.LogDebug(message);
         }
 
         public void Error(string message, Exception ex)
         {
-            this.logger.LogDebug(message);
+            logger.LogDebug(message);
         }
     }
 }

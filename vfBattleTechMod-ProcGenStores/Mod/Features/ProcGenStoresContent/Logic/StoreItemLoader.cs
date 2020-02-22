@@ -11,7 +11,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
     public static class StoreItemLoader
     {
-        public static List<StoreItem> LoadStoreItemsFromExcel(string sourceExcelFilePath, List<ProcGenStoreContentFeatureSettings.RarityBracket> rarityBrackets, List<BattleTechResourceType> validStoreTypes, ILogger logger)
+        public static List<StoreItem> LoadStoreItemsFromExcel(string sourceExcelFilePath,
+            List<ProcGenStoreContentFeatureSettings.RarityBracket> rarityBrackets,
+            List<BattleTechResourceType> validStoreTypes, ILogger logger)
         {
             logger.Debug($"Loading store item definitions from [{sourceExcelFilePath}]...");
 
@@ -43,16 +45,19 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
             foreach (var battleTechResourceType in validStoreTypes)
             {
-                var sheet = book.Worksheets.FirstOrDefault(worksheet => worksheet.Name == battleTechResourceType.ToString());
+                var sheet = book.Worksheets.FirstOrDefault(worksheet =>
+                    worksheet.Name == battleTechResourceType.ToString());
                 if (sheet == null)
                 {
-                    logger.Debug($"Failed to find sheet linked to BattleTechResourceType [{battleTechResourceType.ToString()}]");
+                    logger.Debug(
+                        $"Failed to find sheet linked to BattleTechResourceType [{battleTechResourceType.ToString()}]");
                     continue;
                 }
 
                 if (sheet.Dimension.Rows <= 1)
                 {
-                    logger.Debug($"No items defined in sheet linked to BattleTechResourceType [{battleTechResourceType.ToString()}]");
+                    logger.Debug(
+                        $"No items defined in sheet linked to BattleTechResourceType [{battleTechResourceType.ToString()}]");
                     continue;
                 }
 
@@ -99,7 +104,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     var availability = sheet.Cells[rowIndex, columnHeaderIndex[szAvailability]].Value?.ToString();
                     if (string.IsNullOrEmpty(availability) || availability == szNa)
                     {
-                        logger.Debug($"Row [{rowIndex}] - Id [{id ?? "NULL"}] availability value [{availability ?? "NULL"}] is invalid. Skipping...");
+                        logger.Debug(
+                            $"Row [{rowIndex}] - Id [{id ?? "NULL"}] availability value [{availability ?? "NULL"}] is invalid. Skipping...");
                         continue;
                     }
 
@@ -154,7 +160,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         }
                         else
                         {
-                            logger.Debug($"Null or empty value found on row [{rowIndex}] for column [{columnHeader}]...");
+                            logger.Debug(
+                                $"Null or empty value found on row [{rowIndex}] for column [{columnHeader}]...");
                             rowError = true;
                         }
                     }

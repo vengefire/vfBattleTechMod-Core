@@ -17,17 +17,17 @@ namespace vfBattleTechMod_Core.Utils
 
         public log4NetLogger(string name)
         {
-            this.logger = LogManager.GetLogger(name);
+            logger = LogManager.GetLogger(name);
         }
 
         public void Debug(string message)
         {
-            this.logger.Debug(message);
+            logger.Debug(message);
         }
 
         public void Error(string message, Exception ex)
         {
-            this.logger.Error(message, ex);
+            logger.Error(message, ex);
         }
     }
 }

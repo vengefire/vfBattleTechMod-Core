@@ -15,7 +15,7 @@
 	"Settings": {
 		"SomeCoolSetting": "DefaultCoolSetting",
 		"Procedurally Generate Store Contents": {
-			"Enabled" :  true,
+			"Enabled": true,
 			"StoreItemSourceFile": "xlrp-store-content.xlsx",
 			"CascadeRollsOnFail": true,
 			"BlackMarketSettings": {
