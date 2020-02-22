@@ -19,6 +19,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             List<BattleTechResourceType> storeResourceTypes, ILogger logger)
         {
             this.logger = logger;
+            this.RarityBrackets = rarityBrackets;
             StoreItems = StoreItemLoader.LoadStoreItemsFromExcel(storeItemSourceFilePath, rarityBrackets,
                 storeResourceTypes, logger);
         }
@@ -32,7 +33,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             logger.Debug($"Generating shop inventory for [{starSystemName} - {shopType.ToString()} - {ownerName}]...");
             var potentialInventoryItems = IdentifyPotentialInventoryItems(shopType, ownerName, currentDate, settings);
             logger.Debug(
-                $"Potential Inventory Items = {string.Join("\r\n", potentialInventoryItems.Select(item => item.Id))}");
+                $"Potential Inventory Items = {string.Join("\r\n", potentialInventoryItems.Select(item => $"[{item.StoreItem.Id}] - Bonus [{item.BracketBonus}]"))}");
             var storeInventory = ProduceStoreInventoryFromPotentialItemList(shopType, ownerName, currentDate, settings,
                 planetTagModifiers, potentialInventoryItems);
             logger.Debug(
@@ -44,19 +45,24 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         private List<StoreItem> ProduceStoreInventoryFromPotentialItemList(Shop.ShopType shopType, string ownerName,
             DateTime currentDate, ProcGenStoreContentFeatureSettings settings,
             List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers,
-            List<StoreItem> potentialInventoryItems)
+            List<(StoreItem StoreItem, int BracketBonus)> potentialInventoryItems)
         {
             logger.Debug("Rolling for inventory stock...");
             var inventoryItems = new List<StoreItem>();
             var random = new Random();
+            var cascadeRollOrder =
+                RarityBrackets.FirstOrDefault(bracket => bracket.Name == settings.MaxItemRarityForCascadeQualification)
+                    ?.Order ?? int.MaxValue;
             potentialInventoryItems.ForEach(
                 potentialItem =>
                 {
                     var addedToStore = false;
                     var validRarityBrackets = settings.RarityBrackets
-                        .Where(bracket => bracket.Order >= potentialItem.RarityBracket.Order).ToList()
+                        .Where(bracket => bracket.Order >= potentialItem.StoreItem.RarityBracket.Order - potentialItem.BracketBonus).ToList()
                         .OrderBy(bracket => bracket.Order).ToList();
-                    logger.Debug($"Rolling for item [{potentialItem.Id}]...");
+                    logger.Debug($"Rolling for item [{potentialItem.StoreItem.Id}], original bracket = [{potentialItem.StoreItem.RarityBracket.Name}], effective bracket = [{validRarityBrackets.First().Name}]...");
+
+                    ProcGenStoreContentFeatureSettings.QuantityBracket effectiveQuantityBracket = potentialItem.StoreItem.RarityBracket.QuantityBracket;
 
                     foreach (var bracket in validRarityBrackets)
                     {
@@ -71,23 +77,23 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
                         if (appearanceRoll <= chance)
                         {
-                            var storeItem = potentialItem.Copy();
-                            var quantityRoll = random.Next(bracket.QuantityBracket.LowCount,
-                                bracket.QuantityBracket.HighCount + 1);
-                            storeItem.Quantity = bracket.QuantityBracket.LowCount == -1 ? -1 : quantityRoll;
+                            var storeItem = potentialItem.StoreItem.Copy();
+                            var quantityRoll = random.Next(effectiveQuantityBracket.LowCount,
+                                effectiveQuantityBracket.HighCount + 1);
+                            storeItem.Quantity = effectiveQuantityBracket.LowCount == -1 ? -1 : quantityRoll;
                             planetTagModifiers.ForEach(modifier =>
                                 storeItem.Quantity =
                                     Convert.ToInt32(Math.Round(
                                         Convert.ToDouble(storeItem.Quantity) * modifier.QuantityModifier, 0)));
 
-                            logger.Debug($"Rolling for quantity [{potentialItem.Id}].\r\n" +
-                                         $"Default range = [{bracket.QuantityBracket.LowCount} - {bracket.QuantityBracket.HighCount}] for [{bracket.QuantityBracket.Name}]\r\n" +
+                            logger.Debug($"Rolling for quantity [{storeItem.Id}].\r\n" +
+                                         $"Default range = [{effectiveQuantityBracket.LowCount} - {effectiveQuantityBracket.HighCount}] for [{effectiveQuantityBracket.Name}]\r\n" +
                                          $"Planet Modifiers = [{string.Join(",", planetTagModifiers.Select(modifier => $"{modifier.Tag} - {modifier.QuantityModifier}"))}]\r\n" +
                                          $"Unmodified Roll = [{quantityRoll}]\r\n" +
                                          $"Modified Roll = [{storeItem.Quantity}]");
 
                             logger.Debug(
-                                $"Adding [{storeItem.Id}] to store with quantity [{storeItem.Quantity}].{(potentialItem.RarityBracket.Order != bracket.Order ? "CASCADE SUCCESS" : "")}");
+                                $"Adding [{storeItem.Id}] to store with quantity [{storeItem.Quantity}].{(potentialItem.StoreItem.RarityBracket.Order != bracket.Order ? "CASCADE SUCCESS" : "")}");
 
                             inventoryItems.Add(storeItem);
                             addedToStore = true;
@@ -96,34 +102,42 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
                         if (!settings.CascadeRollsOnFail)
                         {
-                            logger.Debug($"CASCADE DISABLED : [{potentialItem.Id}] FAILED roll");
+                            logger.Debug($"CASCADE DISABLED : [{potentialItem.StoreItem.Id}] FAILED roll");
+                            break;
+                        }
+                        else if (settings.CascadeRollsOnFail && validRarityBrackets.First().Order > cascadeRollOrder)
+                        {
+                            logger.Debug($"CASCADE Enabled but max cascade [{settings.MaxItemRarityForCascadeQualification}-{cascadeRollOrder}] exceeds initial configured rarity [{validRarityBrackets.First().Name}] : [{potentialItem.StoreItem.Id}] FAILED roll");
                             break;
                         }
 
                         logger.Debug(
-                            $"CASCADE ENABLED : [{potentialItem.Id}] FAILED roll, checking next rarity bracket...");
+                            $"CASCADE ENABLED : [{potentialItem.StoreItem.Id}] FAILED roll, checking next rarity bracket...");
                     }
 
                     logger.Debug(
-                        $"[{potentialItem.Id}] - [{(addedToStore ? "added to store" : "not added to store")}.]");
+                        $"[{potentialItem.StoreItem.Id}] - [{(addedToStore ? "added to store" : "not added to store")}.]");
                 });
             return inventoryItems;
         }
 
-        public List<StoreItem> IdentifyPotentialInventoryItems(Shop.ShopType shopType, string ownerName,
+        public List<(StoreItem StoreItem, int BracketBonus)> IdentifyPotentialInventoryItems(Shop.ShopType shopType, string ownerName,
             DateTime currentDate, ProcGenStoreContentFeatureSettings settings)
         {
-            var potentialInventoryItems = new List<StoreItem>();
+            var potentialInventoryItems = new List<(StoreItem StoreItem, int BracketBonus)>();
             switch (shopType)
             {
                 case Shop.ShopType.System:
-                    potentialInventoryItems = StoreItems.Where(
+                    StoreItems.ForEach(
                         item =>
                         {
                             var result = item.IsValidForAppearance(currentDate, ownerName, shopType, settings);
                             logger.Debug($"[{item.Id}] - [{result.ToString()}]");
-                            return result;
-                        }).ToList();
+                            if (result.result)
+                            {
+                                potentialInventoryItems.Add((item, result.bracketBonus));
+                            }
+                        });
                     break;
             }
 

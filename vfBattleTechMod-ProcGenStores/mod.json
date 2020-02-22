@@ -18,6 +18,7 @@
 			"Enabled": true,
 			"StoreItemSourceFile": "xlrp-store-content.xlsx",
 			"CascadeRollsOnFail": true,
+			"MaxItemRarityForCascadeQualification" :  "Uncommon",
 			"BlackMarketSettings": {
 				"BlackMarketMinBaseRarity": "VeryUncommon",
 				"BlackMarketMaxBaseRarity": "PracticallyExtinct",
@@ -28,7 +29,7 @@
 				"MinBaseRarity": "VeryUncommon",
 				"MaxBaseRarity": "PracticallyExtinct",
 				"AppearanceModifier": 1.5,
-				"QuantityModifier": 0.5
+				"QuantityModifier": 1.5
 			},
 			"RarityBrackets": [
 				{

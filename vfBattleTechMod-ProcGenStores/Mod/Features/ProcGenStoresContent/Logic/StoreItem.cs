@@ -29,7 +29,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
         public int Quantity { get; set; } = 0;
 
-        public bool IsValidForAppearance(DateTime currentDate, string ownerValueName, Shop.ShopType shopThisShopType,
+        public (bool result, int bracketBonus) IsValidForAppearance(DateTime currentDate, string ownerValueName, Shop.ShopType shopThisShopType,
             ProcGenStoreContentFeatureSettings settings)
         {
             var wasPrototypedByOwner = PrototypeDate != null && ownerValueName == PrototypeFaction;
@@ -44,22 +44,28 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             {
                 if (isNowCommon)
                 {
-                    return true;
+                    return (true, 0);
                 }
 
                 if (wasReintroduced && currentDate >= ReintroductionDate && wasReintroducedByOwner)
                 {
-                    return true;
+                    return (true, 2);
                 }
 
                 // Went extinct, and was either never reintroduced by the owner, or never went common (Skipped reintro)
-                return false;
+                return (false, 0);
             }
 
             // Check prototype and production parameters...
             if (PrototypeDate == null && ProductionDate == null)
             {
-                return CommonDate == null || isNowCommon;
+                if (CommonDate == null)
+                {
+                    return (true, 0);
+                }
+
+                // Never went extinct, has no prototype or production date. If it's now common, return true with a bracket roll bonus, else false.
+                return (isNowCommon, 2);
             }
 
             if (PrototypeDate != null)
@@ -67,19 +73,28 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 if (currentDate < PrototypeDate)
                 {
                     // Before it was ever prototyped...
-                    return false;
+                    return (false, 0);
                 }
 
                 if (ProductionDate != null && currentDate >= ProductionDate)
                 {
                     // It was prototyped and subsequently produced, or it went common 
-                    return wasProducedByOwner || isNowCommon;
+                    if (!isNowCommon)
+                    {
+                        // Not common yet, but produced by owner...
+                        return (wasProducedByOwner, 2);
+                    }
+                    
+                    // It's now common
+                    return (true, 2);
                 }
 
-                return wasPrototypedByOwner;
+                // We're in the prototype period, and the owner of the store is the prototype agent...
+                return (wasPrototypedByOwner, 2);
             }
 
-            return false;
+            // No valid periods or matching owners...
+            return (false, 0);
         }
     }
 }

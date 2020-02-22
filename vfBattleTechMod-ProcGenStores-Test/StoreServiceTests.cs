@@ -23,7 +23,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
         [OneTimeSetUp]
         public void Init()
         {
-            sourceFile = TestContext.CurrentContext.TestDirectory + @"/res/xlrp-store-content.xlsx";
+            sourceFile = TestContext.CurrentContext.TestDirectory + @"/res/test-xlrp-store-content.xlsx";
             settings = JsonHelpers.DeserializeFile(
                 TestContext.CurrentContext.TestDirectory + @"/res/test-settings.json");
             procGenSettings = settings["Procedurally Generate Store Contents"]
@@ -40,7 +40,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
                     procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_compact_center"));
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
         }
 
         [Test]
@@ -52,7 +52,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.Id == "HeatSink_Template"));
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "HeatSink_Template"));
         }
 
         [Test]
@@ -64,7 +64,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
 
         [Test]
@@ -77,7 +77,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
                     procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.Id == "emod_engineslots_compact_center"));
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
         }
 
         [Test]
@@ -89,7 +89,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", date, procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.Id == "emod_engineslots_xl_center"));
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
 
         [Test]

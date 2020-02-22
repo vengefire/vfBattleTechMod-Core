@@ -74,7 +74,7 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
     <None Include="res\test-store-items.json" />
-    <None Include="res\xlrp-store-content.xlsx">
+    <None Include="res\test-xlrp-store-content.xlsx">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>
