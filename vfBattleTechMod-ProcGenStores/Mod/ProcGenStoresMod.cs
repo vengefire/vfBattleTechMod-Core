@@ -16,9 +16,11 @@ namespace vfBattleTechMod_ProcGenStores.Mod
 
         private static List<IModFeature<IModFeatureSettings>> AddModFeatures()
         {
-            return new List<IModFeature<IModFeatureSettings>> {
-                new ProcGenStoreContentFeature(), 
-                new RepModFeature()};
+            return new List<IModFeature<IModFeatureSettings>>
+            {
+                new ProcGenStoreContentFeature(),
+                new RepModFeature()
+            };
         }
     }
 }

@@ -19,6 +19,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
         private JObject settings;
         private ProcGenStoreContentFeatureSettings procGenSettings;
         private readonly ILogger logger = new NullLogger();
+        private readonly List<string> blankSystemTagList = new List<string>();
 
         [OneTimeSetUp]
         public void Init()
@@ -38,7 +39,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", blankSystemTagList,  date,
                     procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
         }
@@ -51,7 +52,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", blankSystemTagList, date, procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "HeatSink_Template"));
         }
 
@@ -63,7 +64,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", date, procGenSettings);
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", blankSystemTagList, date, procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
 
@@ -75,7 +76,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", date,
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", blankSystemTagList, date,
                     procGenSettings);
             Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
         }
@@ -88,8 +89,56 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", date, procGenSettings);
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", blankSystemTagList, date, procGenSettings);
             Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
+        }
+        
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesMissingRequiredTags()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
+                {
+                    "planet_test_vengefire"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+        }
+        
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesSatisfiedRestrictedTags()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo",
+                    "planet_test_MVP",
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+        }
+        
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyIncludeSatisfiedRequiredTags()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo"
+                }, date, procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
 
         [Test]
@@ -103,7 +152,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var planetModifiers = procGenSettings.PlanetTagModifiers
                 .Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
             var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance",
-                "vengefire", date, planetModifiers, procGenSettings);
+                "vengefire", date, blankSystemTagList, planetModifiers, procGenSettings);
         }
     }
 }

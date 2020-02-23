@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using BattleTech;
 using BattleTech.Framework;
 using Harmony;
@@ -11,12 +10,6 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
     public class RepModFeature : ModFeatureBase<RepModFeatureSettings>
     {
         private new static RepModFeature Myself;
-
-        public void PostFixContractConstructor(int initialContractValue)
-        {
-            Logger.Debug($"Patched Contract Constructor!");
-            initialContractValue = 666;
-        }
 
         public RepModFeature()
             : base(GetPatchDirectives)
@@ -34,18 +27,30 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
                     null,
                     0),
                 new ModPatchDirective(
-                    AccessTools.Constructor(typeof(Contract), new []{ typeof(string), typeof(string), typeof(string), typeof(ContractTypeValue), typeof(GameInstance), typeof(ContractOverride), typeof(GameContext), typeof(bool), typeof(int), typeof(int) , typeof(int) }),
+                    AccessTools.Constructor(typeof(Contract),
+                        new[]
+                        {
+                            typeof(string), typeof(string), typeof(string), typeof(ContractTypeValue),
+                            typeof(GameInstance), typeof(ContractOverride), typeof(GameContext), typeof(bool),
+                            typeof(int), typeof(int), typeof(int)
+                        }),
                     null,
                     typeof(RepModFeature).GetMethod(nameof(PostFixContractConstructor)),
                     null,
-                    0),
+                    0)
             };
 
         public override string Name => "Rep Mod Features";
 
+        public void PostFixContractConstructor(int initialContractValue)
+        {
+            Logger.Debug("Patched Contract Constructor!");
+            initialContractValue = 666;
+        }
+
         public static bool PrefixContractSetInitialReward(Contract __instance, int cbills)
         {
-            Logger.Debug($"Modifying cbills for Set Initial Reward...");
+            Logger.Debug("Modifying cbills for Set Initial Reward...");
             cbills *= 1000;
             return true;
         }

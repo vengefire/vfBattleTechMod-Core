@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using BattleTech;
+using BattleTech.UI;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
@@ -27,11 +30,32 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
         public BattleTechResourceType Type { get; set; }
 
+        public List<string> RequiredPlanetTags { get; set; } = new List<string>();
+
+        public List<string> RestrictedPlanetTags { get; set; } = new List<string>();
+
         public int Quantity { get; set; } = 0;
 
-        public (bool result, int bracketBonus) IsValidForAppearance(DateTime currentDate, string ownerValueName, Shop.ShopType shopThisShopType,
+        public (bool result, int bracketBonus) IsValidForAppearance(DateTime currentDate, string ownerValueName,
+            Shop.ShopType shopThisShopType,
+            List<string> planetTags,
             ProcGenStoreContentFeatureSettings settings)
         {
+            // Check tags...
+            if (this.RequiredPlanetTags.Any())
+            {
+                // Check all required tags are present...
+                if (this.RequiredPlanetTags.Except(planetTags).Any())
+                {
+                    return (false, 0);
+                }
+            }
+
+            if (this.RestrictedPlanetTags.Any() && planetTags.Any(s => this.RestrictedPlanetTags.Contains(s)))
+            {
+                return (false, 0);
+            }
+            
             var wasPrototypedByOwner = PrototypeDate != null && ownerValueName == PrototypeFaction;
             var wasProducedByOwner = ProductionDate != null && ownerValueName == ProductionFaction;
             var wentExtinct = ExtinctionDate != null;
@@ -84,7 +108,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         // Not common yet, but produced by owner...
                         return (wasProducedByOwner, 2);
                     }
-                    
+
                     // It's now common
                     return (true, 2);
                 }

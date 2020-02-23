@@ -29,6 +29,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             const string szCommonDate = "Common Date";
             const string szAvailability = "Availability";
             const string szNa = "NA";
+            const string szRequired = "Required PlanetTags (All of)";
+            const string szRestricted = "Restricted PlanetTags (Any of)";
 
             var columnHeaders = new List<string>
             {
@@ -38,7 +40,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 szExtinctionDate,
                 szReintroDateFaction,
                 szCommonDate,
-                szAvailability
+                szAvailability,
+                szRequired,
+                szRestricted
             };
 
             var columnHeaderIndex = new Dictionary<string, int>();
@@ -155,6 +159,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                                     break;
                                 case szAvailability:
                                     storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);
+                                    break;
+                                case szRequired:
+                                    storeItem.RequiredPlanetTags = value.Split('|').ToList();
+                                    break;
+                                case szRestricted:
+                                    storeItem.RestrictedPlanetTags = value.Split('|').ToList();
                                     break;
                             }
                         }

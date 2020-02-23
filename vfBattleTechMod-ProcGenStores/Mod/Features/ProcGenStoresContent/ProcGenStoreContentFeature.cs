@@ -93,7 +93,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
                 .PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag)).ToList();
 
             var storeItems = Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name,
-                currentDate, planetTagModifiers, Myself.Settings);
+                currentDate, owningSystemTags, planetTagModifiers, Myself.Settings);
             var shopDefItems = storeItems.Select(item =>
             {
                 return new ShopDefItem(item.Id, Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
