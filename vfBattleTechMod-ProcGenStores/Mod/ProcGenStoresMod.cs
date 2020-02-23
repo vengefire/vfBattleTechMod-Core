@@ -3,6 +3,7 @@ using Harmony;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
 using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent;
+using vfBattleTechMod_ProcGenStores.Mod.Features.RepMods;
 
 namespace vfBattleTechMod_ProcGenStores.Mod
 {
@@ -15,7 +16,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod
 
         private static List<IModFeature<IModFeatureSettings>> AddModFeatures()
         {
-            return new List<IModFeature<IModFeatureSettings>> {new ProcGenStoreContentFeature()};
+            return new List<IModFeature<IModFeatureSettings>> {
+                new ProcGenStoreContentFeature(), 
+                new RepModFeature()};
         }
     }
 }

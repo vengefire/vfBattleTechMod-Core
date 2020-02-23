@@ -14,8 +14,11 @@
 
 	"Settings": {
 		"SomeCoolSetting": "DefaultCoolSetting",
+		"Rep Mod Features": {
+			"Enabled":  true
+		},
 		"Procedurally Generate Store Contents": {
-			"Enabled": true,
+			"Enabled": false,
 			"StoreItemSourceFile": "xlrp-store-content.xlsx",
 			"CascadeRollsOnFail": true,
 			"MaxItemRarityForCascadeQualification" :  "Uncommon",

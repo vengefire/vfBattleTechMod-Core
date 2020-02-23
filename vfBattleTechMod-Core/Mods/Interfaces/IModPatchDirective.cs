@@ -12,7 +12,7 @@ namespace vfBattleTechMod_Core.Mods.Interfaces
 
         int Priority { get; }
 
-        MethodInfo TargetMethodType { get; }
+        MethodBase TargetMethodType { get; }
 
         MethodInfo TranspilerMethodType { get; }
 

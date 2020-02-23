@@ -8,7 +8,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
     public class ModPatchDirective : IModPatchDirective
     {
         public ModPatchDirective(
-            MethodInfo targetMethodType,
+            MethodBase targetMethodType,
             MethodInfo prefixMethodType,
             MethodInfo postfixMethodType,
             MethodInfo transpilerMethodType,
@@ -27,7 +27,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         public int Priority { get; }
 
-        public MethodInfo TargetMethodType { get; }
+        public MethodBase TargetMethodType { get; }
 
         public MethodInfo TranspilerMethodType { get; }
 

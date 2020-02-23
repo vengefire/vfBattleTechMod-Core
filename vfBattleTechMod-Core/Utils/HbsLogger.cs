@@ -22,7 +22,7 @@ namespace vfBattleTechMod_Core.Utils
                 {
                     File.Delete(logFilePath);
                 }
-                catch (Exception ex)
+                catch (Exception)
                 {
                     logger.LogDebug($"Failed to delete existing log file [{logFilePath}]");
                 }
