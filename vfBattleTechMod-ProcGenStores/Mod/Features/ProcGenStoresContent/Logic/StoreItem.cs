@@ -37,7 +37,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         public int Quantity { get; set; } = 0;
 
         public (bool result, int bracketBonus) IsValidForAppearance(DateTime currentDate, string ownerValueName,
-            Shop.ShopType shopThisShopType,
+            Shop.ShopType shopType,
             List<string> planetTags,
             ProcGenStoreContentFeatureSettings settings)
         {
@@ -45,13 +45,14 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             if (this.RequiredPlanetTags.Any())
             {
                 // Check all required tags are present...
-                if (this.RequiredPlanetTags.Except(planetTags).Any())
+                // Unless we're populating a black market, and they're configured to circumvent required restrictions...
+                if (this.RequiredPlanetTags.Except(planetTags).Any() && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRequiredPlanetTags))
                 {
                     return (false, 0);
                 }
             }
 
-            if (this.RestrictedPlanetTags.Any() && planetTags.Any(s => this.RestrictedPlanetTags.Contains(s)))
+            if (this.RestrictedPlanetTags.Any() && planetTags.Any(s => this.RestrictedPlanetTags.Contains(s)) && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRestrictedPlanetTags))
             {
                 return (false, 0);
             }
@@ -71,9 +72,16 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     return (true, 0);
                 }
 
-                if (wasReintroduced && currentDate >= ReintroductionDate && wasReintroducedByOwner)
+                if (wasReintroduced && currentDate >= ReintroductionDate)
                 {
-                    return (true, 2);
+                    if (wasReintroducedByOwner)
+                    {
+                        return (true, 2);
+                    }
+                    else if (shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventFactionRestrictions)
+                    {
+                        return (true, 0);
+                    }
                 }
 
                 // Went extinct, and was either never reintroduced by the owner, or never went common (Skipped reintro)
@@ -88,7 +96,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     return (true, 0);
                 }
 
-                // Never went extinct, has no prototype or production date. If it's now common, return true with a bracket roll bonus, else false.
+                // Never went extinct, has no prototype or production date. If it's now common, return true with a bracket roll bonus, else fall through to false.
                 return (isNowCommon, 2);
             }
 
@@ -105,6 +113,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     // It was prototyped and subsequently produced, or it went common 
                     if (!isNowCommon)
                     {
+                        // Not common yet, not produced by owner, but black market stores can circumvent that requirement...
+                        if (!wasProducedByOwner && shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventFactionRestrictions)
+                        {
+                            return (true, 0);
+                        }
+                        
                         // Not common yet, but produced by owner...
                         return (wasProducedByOwner, 2);
                     }
@@ -113,7 +127,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     return (true, 2);
                 }
 
-                // We're in the prototype period, and the owner of the store is the prototype agent...
+                // We're in the prototype period, the item was not produced by the owner, but blackmarkets can circumvent that (maybe)...
+                if (!wasPrototypedByOwner && shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventFactionRestrictions)
+                {
+                    return (true, 0);
+                }
+                // We're in the prototype period, return true if the owner of the store is the prototype agent...
                 return (wasPrototypedByOwner, 2);
             }
 

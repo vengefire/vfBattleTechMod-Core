@@ -29,6 +29,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             public double BlackMarketAppearanceModifier { get; set; } = 1.5;
 
             public double BlackMarketQuantityModifier { get; set; } = 0.5;
+
+            public bool CircumventRequiredPlanetTags { get; set; } = false;
+
+            public bool CircumventRestrictedPlanetTags { get; set; } = false;
+
+            public bool CircumventFactionRestrictions { get; set; } = false;
         }
 
         public class FactionMarket

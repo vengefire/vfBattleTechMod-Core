@@ -9,7 +9,10 @@
 			"BlackMarketMinBaseRarity": "VeryUncommon",
 			"BlackMarketMaxBaseRarity": "PracticallyExtinct",
 			"BlackMarketAppearanceModifier": 1.5,
-			"BlackMarketQuantityModifier": 0.5
+			"BlackMarketQuantityModifier": 0.5,
+			"CircumventRequiredPlanetTags" : false,
+			"CircumventRestrictedPlanetTags" : false,
+			"CircumventFactionRestrictions" : false
 		},
 		"FactionMarketSettings": {
 			"MinBaseRarity": "VeryUncommon",
