@@ -9,6 +9,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public bool CascadeRollsOnFail { get; set; } = true;
 
+        public bool UseAdditiveForModifiers { get; set; } = true;
+
         public string MaxItemRarityForCascadeQualification { get; set; } = "Uncommon";
 
         public BlackMarket BlackMarketSettings { get; set; } = new BlackMarket();

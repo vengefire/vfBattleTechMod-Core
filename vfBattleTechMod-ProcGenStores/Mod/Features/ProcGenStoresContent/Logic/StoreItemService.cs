@@ -69,7 +69,18 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     foreach (var bracket in validRarityBrackets)
                     {
                         var chance = bracket.ChanceToAppear;
-                        planetTagModifiers.ForEach(modifier => chance *= modifier.ChanceModifier);
+
+                        if (settings.UseAdditiveForModifiers)
+                        {
+                            var totalModifier = planetTagModifiers.Sum(modifier => modifier.ChanceModifier >= 1 ? modifier.ChanceModifier - 1 : (1 - modifier.ChanceModifier) * -1) + 1;
+                            _logger.Debug($"Additive multiplier = [{totalModifier}]");
+                            chance *= totalModifier;
+                        }
+                        else
+                        {
+                            planetTagModifiers.ForEach(modifier => chance *= modifier.ChanceModifier);
+                        }
+
                         var appearanceRoll = random.NextDouble();
 
                         _logger.Debug($"Default chance = [{bracket.ChanceToAppear}] for [{bracket.Name}]\r\n" +

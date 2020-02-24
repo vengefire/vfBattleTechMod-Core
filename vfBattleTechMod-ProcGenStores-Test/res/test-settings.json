@@ -5,6 +5,7 @@
 		"StoreItemSourceFile": "xlrp-store-content.xlsx",
 		"CascadeRollsOnFail": true,
 		"MaxItemRarityForCascadeQualification" :  "Uncommon",
+		"UseAdditiveForModifiers" :  false,
 		"BlackMarketSettings": {
 			"BlackMarketMinBaseRarity": "VeryUncommon",
 			"BlackMarketMaxBaseRarity": "PracticallyExtinct",

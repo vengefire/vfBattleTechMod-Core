@@ -263,7 +263,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var date = new DateTime(3025, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var planetTags = new List<string> {"planet_pop_large"};
+            var planetTags = new List<string> {"planet_pop_large", "planet_pop_small"};
             var planetModifiers = procGenSettings.PlanetTagModifiers
                 .Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
             var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance",
