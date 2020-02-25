@@ -7,5 +7,7 @@ namespace vfBattleTechMod_Core.Utils.Interfaces
         void Debug(string message);
 
         void Error(string message, Exception ex);
+
+        void Trace(string message);
     }
 }

@@ -29,5 +29,10 @@ namespace vfBattleTechMod_Core.Utils
         {
             logger.Error(message, ex);
         }
+
+        public void Trace(string message)
+        {
+            logger.Info(message);
+        }
     }
 }

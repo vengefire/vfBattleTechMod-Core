@@ -14,5 +14,10 @@ namespace vfBattleTechMod_Core.Utils
         {
             Console.WriteLine(string.Join("\r\n", message, ex.ToString()));
         }
+
+        public void Trace(string message)
+        {
+            Console.WriteLine(message);
+        }
     }
 }

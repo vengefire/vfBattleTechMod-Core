@@ -37,10 +37,15 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Debug(string message)
         {
-            logger.LogDebug(message);
+            logger.Log(message);
         }
 
         public void Error(string message, Exception ex)
+        {
+            logger.LogError(message);
+        }
+
+        public void Trace(string message)
         {
             logger.LogDebug(message);
         }
