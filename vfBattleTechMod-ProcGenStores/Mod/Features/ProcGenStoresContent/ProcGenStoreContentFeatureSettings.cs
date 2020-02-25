@@ -24,6 +24,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public class BlackMarket
         {
+            public bool CascadeRollsOnFail = true;
+            public string MaxItemRarityForCascadeQualification = "PracticallyExtinct";
             public string BlackMarketMinBaseRarity { get; set; } = "VeryUncommon";
 
             public string BlackMarketMaxBaseRarity { get; set; } = "PracticallyExtinct";
@@ -31,6 +33,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             public double BlackMarketAppearanceModifier { get; set; } = 1.5;
 
             public double BlackMarketQuantityModifier { get; set; } = 0.5;
+
+            public int BlackMarketRarityBracketModifier { get; set; } = -1;
+
+            public int BlackMarketQuantityBracketModifier { get; set; } = 0;
 
             public bool CircumventRequiredPlanetTags { get; set; } = false;
 

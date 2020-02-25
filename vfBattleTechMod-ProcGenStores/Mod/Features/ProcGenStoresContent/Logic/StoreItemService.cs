@@ -17,13 +17,13 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             List<ProcGenStoreContentFeatureSettings.RarityBracket> rarityBrackets,
             List<BattleTechResourceType> storeResourceTypes, ILogger logger)
         {
-            this._logger = logger;
+            _logger = logger;
             _rarityBrackets = rarityBrackets;
             StoreItems = StoreItemLoader.LoadStoreItemsFromExcel(storeItemSourceFilePath, rarityBrackets,
                 storeResourceTypes, logger);
         }
 
-        private List<StoreItem> StoreItems { get; set; }
+        private List<StoreItem> StoreItems { get; }
 
         public List<StoreItem> GenerateItemsForStore(Shop.ShopType shopType, string starSystemName, string ownerName,
             DateTime currentDate, List<string> planetTags, List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers,
@@ -47,34 +47,44 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             List<(StoreItem StoreItem, int BracketBonus)> potentialInventoryItems)
         {
             _logger.Debug("Rolling for inventory stock...");
-
+            
+            var cascadeOnFail = settings.CascadeRollsOnFail;
+            var maxCascadeBracket = settings.MaxItemRarityForCascadeQualification;
+            var rarityBracketBonus = 0;
+            var quantityBracketBonus = 0;
+            
             if (shopType == Shop.ShopType.BlackMarket)
             {
+                cascadeOnFail = settings.BlackMarketSettings.CascadeRollsOnFail;
+                maxCascadeBracket = settings.BlackMarketSettings.MaxItemRarityForCascadeQualification;
+                rarityBracketBonus = settings.BlackMarketSettings.BlackMarketRarityBracketModifier;
+                quantityBracketBonus = settings.BlackMarketSettings.BlackMarketQuantityBracketModifier;
                 var minRarityBracket = _rarityBrackets.First(bracket => bracket.Name == settings.BlackMarketSettings.BlackMarketMinBaseRarity);
                 var maxRarityBracket = _rarityBrackets.First(bracket => bracket.Name == settings.BlackMarketSettings.BlackMarketMaxBaseRarity);
                 _logger.Debug($"Trimming black market potential inventory [{potentialInventoryItems.Count} items] by rarity [{settings.BlackMarketSettings.BlackMarketMinBaseRarity}] - [{settings.BlackMarketSettings.BlackMarketMaxBaseRarity}]...");
                 potentialInventoryItems.RemoveAll(tuple => tuple.StoreItem.RarityBracket.Order < minRarityBracket.Order || tuple.StoreItem.RarityBracket.Order > maxRarityBracket.Order);
                 _logger.Debug($"Trimmed black market potential inventory to [{potentialInventoryItems.Count} items] by rarity [{settings.BlackMarketSettings.BlackMarketMinBaseRarity}] - [{settings.BlackMarketSettings.BlackMarketMaxBaseRarity}]...");
             }
-            
+
             var inventoryItems = new List<StoreItem>();
             var random = new Random();
             var cascadeRollOrder =
-                _rarityBrackets.FirstOrDefault(bracket => bracket.Name == settings.MaxItemRarityForCascadeQualification)
+                _rarityBrackets.FirstOrDefault(bracket => bracket.Name == maxCascadeBracket)
                     ?.Order ?? int.MaxValue;
             potentialInventoryItems.ForEach(
                 potentialItem =>
                 {
                     var addedToStore = false;
+                    var bracketModifier = -potentialItem.BracketBonus + rarityBracketBonus;
                     var validRarityBrackets = settings.RarityBrackets
                         .Where(bracket =>
-                            bracket.Order >= potentialItem.StoreItem.RarityBracket.Order - potentialItem.BracketBonus)
+                            bracket.Order >= potentialItem.StoreItem.RarityBracket.Order + bracketModifier)
                         .ToList()
                         .OrderBy(bracket => bracket.Order).ToList();
                     _logger.Debug(
                         $"Rolling for item [{potentialItem.StoreItem.Id}], original bracket = [{potentialItem.StoreItem.RarityBracket.Name}], effective bracket = [{validRarityBrackets.First().Name}]...");
 
-                    var effectiveQuantityBracket = potentialItem.StoreItem.RarityBracket.QuantityBracket;
+                    var effectiveQuantityBracket = _rarityBrackets.First(bracket => bracket.Order == potentialItem.StoreItem.RarityBracket.Order + quantityBracketBonus).QuantityBracket;
 
                     foreach (var bracket in validRarityBrackets)
                     {
@@ -94,9 +104,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         var appearanceRoll = random.NextDouble();
 
                         _logger.Debug($"Default chance = [{bracket.ChanceToAppear}] for [{bracket.Name}]\r\n" +
-                                     $"Planet Modifiers = [{string.Join(",", planetTagModifiers.Select(modifier => $"{modifier.Tag} - {modifier.ChanceModifier}"))}]\r\n" +
-                                     $"Final Chance = [{chance}]\r\n" +
-                                     $"Roll = [{appearanceRoll}]");
+                                      $"Planet Modifiers = [{string.Join(",", planetTagModifiers.Select(modifier => $"{modifier.Tag} - {modifier.ChanceModifier}"))}]\r\n" +
+                                      $"Final Chance = [{chance}]\r\n" +
+                                      $"Roll = [{appearanceRoll}]");
 
                         if (appearanceRoll <= chance)
                         {
@@ -110,10 +120,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                                         Convert.ToDouble(storeItem.Quantity) * modifier.QuantityModifier, 0)));
 
                             _logger.Debug($"Rolling for quantity [{storeItem.Id}].\r\n" +
-                                         $"Default range = [{effectiveQuantityBracket.LowCount} - {effectiveQuantityBracket.HighCount}] for [{effectiveQuantityBracket.Name}]\r\n" +
-                                         $"Planet Modifiers = [{string.Join(",", planetTagModifiers.Select(modifier => $"{modifier.Tag} - {modifier.QuantityModifier}"))}]\r\n" +
-                                         $"Unmodified Roll = [{quantityRoll}]\r\n" +
-                                         $"Modified Roll = [{storeItem.Quantity}]");
+                                          $"Default range = [{effectiveQuantityBracket.LowCount} - {effectiveQuantityBracket.HighCount}] for [{effectiveQuantityBracket.Name}]\r\n" +
+                                          $"Planet Modifiers = [{string.Join(",", planetTagModifiers.Select(modifier => $"{modifier.Tag} - {modifier.QuantityModifier}"))}]\r\n" +
+                                          $"Unmodified Roll = [{quantityRoll}]\r\n" +
+                                          $"Modified Roll = [{storeItem.Quantity}]");
 
                             _logger.Debug(
                                 $"Adding [{storeItem.Id}] to store with quantity [{storeItem.Quantity}].{(potentialItem.StoreItem.RarityBracket.Order != bracket.Order ? "CASCADE SUCCESS" : "")}");
@@ -123,13 +133,13 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                             break;
                         }
 
-                        if (!settings.CascadeRollsOnFail)
+                        if (!cascadeOnFail)
                         {
                             _logger.Debug($"CASCADE DISABLED : [{potentialItem.StoreItem.Id}] FAILED roll");
                             break;
                         }
 
-                        if (settings.CascadeRollsOnFail && validRarityBrackets.First().Order > cascadeRollOrder)
+                        if (cascadeOnFail && validRarityBrackets.First().Order > cascadeRollOrder)
                         {
                             _logger.Debug(
                                 $"CASCADE Enabled but max cascade [{settings.MaxItemRarityForCascadeQualification}-{cascadeRollOrder}] exceeds initial configured rarity [{validRarityBrackets.First().Name}] : [{potentialItem.StoreItem.Id}] FAILED roll");
@@ -155,7 +165,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             switch (shopType)
             {
                 case Shop.ShopType.System:
-                case Shop.ShopType.BlackMarket: 
+                case Shop.ShopType.BlackMarket:
                     StoreItems.ForEach(
                         item =>
                         {

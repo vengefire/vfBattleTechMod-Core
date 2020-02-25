@@ -27,9 +27,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             };
 
         public ProcGenStoreContentFeature()
-            : base(GetPatchDirectives)
+            : base(ProcGenStoreContentFeature.GetPatchDirectives)
         {
-            Myself = this;
+            ProcGenStoreContentFeature.Myself = this;
         }
 
         protected StoreItemService StoreItemService { get; set; }
@@ -61,27 +61,27 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public static bool PrefixInitializeShop(Shop __instance, ref List<string> collections)
         {
-            Logger.Debug("Noping out of Shop::Initialize.");
+            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Noping out of Shop::Initialize.");
             collections = null;
-            Logger.Debug("Noped out of Shop::Initialize.");
+            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Noped out of Shop::Initialize.");
             return true;
         }
 
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
-            if (Myself._lastGenDateTime != null)
+            if (ProcGenStoreContentFeature.Myself._lastGenDateTime != null)
             {
-                var difference = DateTime.Now - Myself._lastGenDateTime;
+                var difference = DateTime.Now - ProcGenStoreContentFeature.Myself._lastGenDateTime;
                 if (difference.TotalMinutes < 1)
                 {
-                    Logger.Debug("Shop refresh request < 1 minute ago, skipping...");
+                    ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Shop refresh request < 1 minute ago, skipping...");
                     return false;
                 }
             }
 
-            Myself._lastGenDateTime = DateTime.Now;
+            ProcGenStoreContentFeature.Myself._lastGenDateTime = DateTime.Now;
 
-            Logger.Debug("Injecting custom shop inventory...");
+            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Injecting custom shop inventory...");
             __instance.Clear();
 
             var owningSystemTags = ___system.Tags.ToList();
@@ -92,15 +92,15 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var planetTagModifiers = ModFeatureBase<ProcGenStoreContentFeatureSettings>.Myself.Settings
                 .PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag)).ToList();
 
-            var storeItems = Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name,
-                currentDate, owningSystemTags, planetTagModifiers, Myself.Settings);
+            var storeItems = ProcGenStoreContentFeature.Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name,
+                currentDate, owningSystemTags, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
             var shopDefItems = storeItems.Select(item =>
             {
-                return new ShopDefItem(item.Id, Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
+                return new ShopDefItem(item.Id, ProcGenStoreContentFeature.Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
                     item.Quantity == -1, false, 0);
             }).ToList();
 
-            Logger.Debug($"ShopDefItems = [\r\n{JsonConvert.SerializeObject(shopDefItems, Formatting.Indented)}]");
+            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"ShopDefItems = [\r\n{JsonConvert.SerializeObject(shopDefItems, Formatting.Indented)}]");
 
             var result = new ItemCollectionResult
             {
@@ -113,7 +113,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             };
 
             ___Sim.ItemCollectionResultGen.InsertShopDefItem(result.items, __instance.ActiveInventory);
-            Logger.Debug("Injecting custom shop inventory complete.");
+            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Injecting custom shop inventory complete.");
             return false;
         }
 
@@ -121,7 +121,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         {
             if (!File.Exists(StoreItemSourceFilePath()))
             {
-                Logger.Debug(
+                ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug(
                     $"{Name} failed settings validation, store items file [{StoreItemSourceFilePath()}] does not exist.");
                 return false;
             }
@@ -137,7 +137,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         public override void OnInitializeComplete()
         {
             StoreItemService = new StoreItemService(Path.Combine(Directory, Settings.StoreItemSourceFile),
-                Settings.RarityBrackets, BattleTechStoreResourceTypes, Logger);
+                Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
         }
     }
 }

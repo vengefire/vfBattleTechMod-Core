@@ -31,6 +31,23 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 .ToObject<ProcGenStoreContentFeatureSettings>();
         }
 
+        public void TestStoreItemPotentialsCorrectlyIncludesSatisfiedRestrictedTagsForBlackMarket()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            procGenSettings.BlackMarketSettings.CircumventRestrictedPlanetTags = true;
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo",
+                    "planet_test_MVP"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+        }
+
         [Test]
         public void TestStoreItemPotentialsCorrectlyExcludeFutureTechForEarlyDate()
         {
@@ -39,9 +56,39 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", blankSystemTagList,  date,
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "vengefire", blankSystemTagList, date,
                     procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesMissingRequiredTags()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>
+                {
+                    "planet_test_vengefire"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesMissingRequiredTagsForBlackMarket()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>
+                {
+                    "planet_test_vengefire"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
 
         [Test]
@@ -57,6 +104,18 @@ namespace vfBattleTechMod_ProcGenStores_Test
         }
 
         [Test]
+        public void TestStoreItemPotentialsCorrectlyExcludesProductionTechForLateDateAndFactionForBlackMarket()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3070, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+        }
+
+        [Test]
         public void TestStoreItemPotentialsCorrectlyExcludesPrototypeTechForLateDateAndFaction()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
@@ -67,7 +126,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "TH", blankSystemTagList, date, procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
-        
+
         [Test]
         public void TestStoreItemPotentialsCorrectlyExcludesPrototypeTechForLateDateAndFactionForBlackMarket()
         {
@@ -79,45 +138,57 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
             Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
-        
+
         [Test]
-        public void TestStoreItemPotentialsCorrectlyIncludesPrototypeTechForLateDateAndFactionForBlackMarket()
+        public void TestStoreItemPotentialsCorrectlyExcludesSatisfiedRestrictedTags()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
             var date = new DateTime(3036, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo",
+                    "planet_test_MVP"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
-        
+
         [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesProductionTechForLateDateAndFactionForBlackMarket()
+        public void TestStoreItemPotentialsCorrectlyExcludesSatisfiedRestrictedTagsForBlackMarket()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3070, 1, 1);
+            var date = new DateTime(3036, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo",
+                    "planet_test_MVP"
+                }, date, procGenSettings);
+            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
-        
+
         [Test]
-        public void TestStoreItemPotentialsCorrectlyIncludesProductionTechForLateDateAndFactionForBlackMarket()
+        public void TestStoreItemPotentialsCorrectlyIncludeSatisfiedRequiredTags()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3070, 1, 1);
+            var date = new DateTime(3036, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>
+                {
+                    "planet_test_vengefire",
+                    "planet_test_zappo"
+                }, date, procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
-        
+
         [Test]
         public void TestStoreItemPotentialsCorrectlyIncludesFutureTechForLateDate()
         {
@@ -132,6 +203,35 @@ namespace vfBattleTechMod_ProcGenStores_Test
         }
 
         [Test]
+        public void TestStoreItemPotentialsCorrectlyIncludesMissingRequiredTagsForBlackMarket()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3036, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            procGenSettings.BlackMarketSettings.CircumventRequiredPlanetTags = true;
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>
+                {
+                    "planet_test_vengefire"
+                }, date, procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+        }
+
+        [Test]
+        public void TestStoreItemPotentialsCorrectlyIncludesProductionTechForLateDateAndFactionForBlackMarket()
+        {
+            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
+            var date = new DateTime(3070, 1, 1);
+            var storeItemService =
+                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
+            var potentialInventory =
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+        }
+
+        [Test]
         public void TestStoreItemPotentialsCorrectlyIncludesPrototypeTechForLateDateAndFaction()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
@@ -142,118 +242,18 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", blankSystemTagList, date, procGenSettings);
             Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
-        
+
         [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesMissingRequiredTags()
+        public void TestStoreItemPotentialsCorrectlyIncludesPrototypeTechForLateDateAndFactionForBlackMarket()
         {
             var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
             var date = new DateTime(3036, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
+            procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
             var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
-                {
-                    "planet_test_vengefire"
-                }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesSatisfiedRestrictedTags()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
-                {
-                    "planet_test_vengefire",
-                    "planet_test_zappo",
-                    "planet_test_MVP",
-                }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyIncludeSatisfiedRequiredTags()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.System, "LC", new List<string>()
-                {
-                    "planet_test_vengefire",
-                    "planet_test_zappo"
-                }, date, procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesSatisfiedRestrictedTagsForBlackMarket()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>()
-                {
-                    "planet_test_vengefire",
-                    "planet_test_zappo",
-                    "planet_test_MVP",
-                }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyExcludesMissingRequiredTagsForBlackMarket()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>()
-                {
-                    "planet_test_vengefire"
-                }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        public void TestStoreItemPotentialsCorrectlyIncludesSatisfiedRestrictedTagsForBlackMarket()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            procGenSettings.BlackMarketSettings.CircumventRestrictedPlanetTags = true;
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>()
-                {
-                    "planet_test_vengefire",
-                    "planet_test_zappo",
-                    "planet_test_MVP",
-                }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
-        }
-        
-        [Test]
-        public void TestStoreItemPotentialsCorrectlyIncludesMissingRequiredTagsForBlackMarket()
-        {
-            var storeItemTypes = new List<BattleTechResourceType> {BattleTechResourceType.HeatSinkDef};
-            var date = new DateTime(3036, 1, 1);
-            var storeItemService =
-                new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            procGenSettings.BlackMarketSettings.CircumventRequiredPlanetTags = true;
-            var potentialInventory =
-                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "LC", new List<string>()
-                {
-                    "planet_test_vengefire"
-                }, date, procGenSettings);
-            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+                storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
 
         [Test]
@@ -263,11 +263,11 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var date = new DateTime(3025, 1, 1);
             var storeItemService =
                 new StoreItemService(sourceFile, procGenSettings.RarityBrackets, storeItemTypes, logger);
-            var planetTags = new List<string> {"planet_pop_large", "planet_pop_small"};
+            var planetTags = new List<string> {"planet_pop_large"};
             var planetModifiers = procGenSettings.PlanetTagModifiers
                 .Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
             var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.BlackMarket, "Planet Vengeance",
-                "vengefire", date, blankSystemTagList, planetModifiers, procGenSettings);
+                "vengefire", date, planetTags, planetModifiers, procGenSettings);
         }
     }
 }

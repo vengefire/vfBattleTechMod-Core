@@ -22,7 +22,7 @@ namespace vfBattleTechMod_Core.Extensions
 
         public static object Copy(this object originalObject)
         {
-            return InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
+            return ObjectExtensions.InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
         }
 
         private static object InternalCopy(object originalObject, IDictionary<object, object> visited)
@@ -48,7 +48,7 @@ namespace vfBattleTechMod_Core.Extensions
                 return null;
             }
 
-            var cloneObject = CloneMethod.Invoke(originalObject, null);
+            var cloneObject = ObjectExtensions.CloneMethod.Invoke(originalObject, null);
             if (typeToReflect.IsArray)
             {
                 var arrayType = typeToReflect.GetElementType();
@@ -56,13 +56,13 @@ namespace vfBattleTechMod_Core.Extensions
                 {
                     var clonedArray = (Array) cloneObject;
                     clonedArray.ForEach((array, indices) =>
-                        array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                        array.SetValue(ObjectExtensions.InternalCopy(clonedArray.GetValue(indices), visited), indices));
                 }
             }
 
             visited.Add(originalObject, cloneObject);
-            CopyFields(originalObject, visited, cloneObject, typeToReflect);
-            RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
+            ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect);
+            ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
         }
 
@@ -71,8 +71,8 @@ namespace vfBattleTechMod_Core.Extensions
         {
             if (typeToReflect.BaseType != null)
             {
-                RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
-                CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType,
+                ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
+                ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType,
                     BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
             }
         }
@@ -95,7 +95,7 @@ namespace vfBattleTechMod_Core.Extensions
                 }
 
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
+                var clonedFieldValue = ObjectExtensions.InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }
@@ -151,10 +151,7 @@ namespace vfBattleTechMod_Core.Extensions
             public ArrayTraverse(Array array)
             {
                 maxLengths = new int[array.Rank];
-                for (var i = 0; i < array.Rank; ++i)
-                {
-                    maxLengths[i] = array.GetLength(i) - 1;
-                }
+                for (var i = 0; i < array.Rank; ++i) maxLengths[i] = array.GetLength(i) - 1;
 
                 Position = new int[array.Rank];
             }
@@ -162,18 +159,13 @@ namespace vfBattleTechMod_Core.Extensions
             public bool Step()
             {
                 for (var i = 0; i < Position.Length; ++i)
-                {
                     if (Position[i] < maxLengths[i])
                     {
                         Position[i]++;
-                        for (var j = 0; j < i; j++)
-                        {
-                            Position[j] = 0;
-                        }
+                        for (var j = 0; j < i; j++) Position[j] = 0;
 
                         return true;
                     }
-                }
 
                 return false;
             }

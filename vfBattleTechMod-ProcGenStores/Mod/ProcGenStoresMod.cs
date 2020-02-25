@@ -10,7 +10,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod
     public class ProcGenStoresMod : ModBase<ProcGenStoresModSettings>
     {
         public ProcGenStoresMod(HarmonyInstance harmonyInstance, string directory, string settings, string name)
-            : base(harmonyInstance, directory, settings, name, AddModFeatures())
+            : base(harmonyInstance, directory, settings, name, ProcGenStoresMod.AddModFeatures())
         {
         }
 

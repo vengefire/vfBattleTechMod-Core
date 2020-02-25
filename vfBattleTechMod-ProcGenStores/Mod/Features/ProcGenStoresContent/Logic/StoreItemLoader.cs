@@ -29,7 +29,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             const string szCommonDate = "Common Date";
             const string szAvailability = "Availability";
             const string szNa = "NA";
-            const string szRequired = "Required PlanetTags (All of)";
+            const string szRequired = "Required PlanetTags (Any of)";
             const string szRestricted = "Restricted PlanetTags (Any of)";
 
             var columnHeaders = new List<string>
@@ -114,72 +114,56 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     }
 
                     storeItem = new StoreItem();
-                    var rowError = false;
                     foreach (var columnHeader in columnHeaderIndex.Keys)
                     {
                         var value = sheet.Cells[rowIndex, columnHeaderIndex[columnHeader]].Value?.ToString();
-                        if (!string.IsNullOrEmpty(value))
+                        if (value == szNa || string.IsNullOrEmpty(value))
                         {
-                            if (value == szNa)
-                            {
-                                continue;
-                            }
-
-                            switch (columnHeader)
-                            {
-                                case szId:
-                                    storeItem.Id = value;
-                                    break;
-                                case szPrototypeDateFaction:
-                                {
-                                    var (date, faction) = ExtractDateAndFaction(value);
-                                    storeItem.PrototypeDate = date;
-                                    storeItem.PrototypeFaction = faction;
-                                    break;
-                                }
-                                case szProductionDateFaction:
-                                {
-                                    var (date, faction) = ExtractDateAndFaction(value);
-                                    storeItem.ProductionDate = date;
-                                    storeItem.ProductionFaction = faction;
-                                    break;
-                                }
-                                case szReintroDateFaction:
-                                {
-                                    var (date, faction) = ExtractDateAndFaction(value);
-                                    storeItem.ReintroductionDate = date;
-                                    storeItem.ReintroductionFaction = faction;
-                                    break;
-                                }
-                                case szExtinctionDate:
-                                    storeItem.ExtinctionDate = new DateTime(Convert.ToInt32(value), 1, 1);
-                                    break;
-                                case szCommonDate:
-                                    storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
-                                    break;
-                                case szAvailability:
-                                    storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);
-                                    break;
-                                case szRequired:
-                                    storeItem.RequiredPlanetTags = value.Split('|').ToList();
-                                    break;
-                                case szRestricted:
-                                    storeItem.RestrictedPlanetTags = value.Split('|').ToList();
-                                    break;
-                            }
+                            continue;
                         }
-                        else
+
+                        switch (columnHeader)
                         {
-                            logger.Debug(
-                                $"Null or empty value found on row [{rowIndex}] for column [{columnHeader}]...");
-                            rowError = true;
+                            case szId:
+                                storeItem.Id = value;
+                                break;
+                            case szPrototypeDateFaction:
+                            {
+                                var (date, faction) = ExtractDateAndFaction(value);
+                                storeItem.PrototypeDate = date;
+                                storeItem.PrototypeFaction = faction;
+                                break;
+                            }
+                            case szProductionDateFaction:
+                            {
+                                var (date, faction) = ExtractDateAndFaction(value);
+                                storeItem.ProductionDate = date;
+                                storeItem.ProductionFaction = faction;
+                                break;
+                            }
+                            case szReintroDateFaction:
+                            {
+                                var (date, faction) = ExtractDateAndFaction(value);
+                                storeItem.ReintroductionDate = date;
+                                storeItem.ReintroductionFaction = faction;
+                                break;
+                            }
+                            case szExtinctionDate:
+                                storeItem.ExtinctionDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                break;
+                            case szCommonDate:
+                                storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                break;
+                            case szAvailability:
+                                storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);
+                                break;
+                            case szRequired:
+                                storeItem.RequiredPlanetTags = value.Split('|').ToList();
+                                break;
+                            case szRestricted:
+                                storeItem.RestrictedPlanetTags = value.Split('|').ToList();
+                                break;
                         }
-                    }
-
-                    if (rowError)
-                    {
-                        logger.Debug("Found errors processing row, skipping...");
-                        continue;
                     }
 
                     logger.Debug($"Adding store item [{JsonConvert.SerializeObject(storeItem)}]");

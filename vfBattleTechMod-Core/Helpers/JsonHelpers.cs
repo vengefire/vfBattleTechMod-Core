@@ -16,26 +16,26 @@ namespace vfBattleTechMod_Core.Helpers
 
         public static JObject Deserialize(string jsonString)
         {
-            var commasAdded = AddMissingCommas(jsonString);
+            var commasAdded = JsonHelpers.AddMissingCommas(jsonString);
             var jsonObject = (JObject) JsonConvert.DeserializeObject(commasAdded);
             return jsonObject;
         }
 
         public static TObject Deserialize<TObject>(string jsonString)
         {
-            var commasAdded = AddMissingCommas(jsonString);
+            var commasAdded = JsonHelpers.AddMissingCommas(jsonString);
             var typedObject = JsonConvert.DeserializeObject<TObject>(commasAdded);
             return typedObject;
         }
 
         public static TObject DeserializeObject<TObject>(string jsonString)
         {
-            return Deserialize<TObject>(jsonString);
+            return JsonHelpers.Deserialize<TObject>(jsonString);
         }
 
         public static JObject DeserializeFile(string filePath)
         {
-            return Deserialize(File.ReadAllText(filePath));
+            return JsonHelpers.Deserialize(File.ReadAllText(filePath));
         }
 
         public static string Prettify(string json)

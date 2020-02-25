@@ -12,9 +12,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
         private new static RepModFeature Myself;
 
         public RepModFeature()
-            : base(GetPatchDirectives)
+            : base(RepModFeature.GetPatchDirectives)
         {
-            Myself = this;
+            RepModFeature.Myself = this;
         }
 
         public static List<IModPatchDirective> GetPatchDirectives =>
@@ -22,7 +22,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
             {
                 new ModPatchDirective(
                     typeof(Contract).GetMethod(nameof(Contract.SetInitialReward)),
-                    typeof(RepModFeature).GetMethod(nameof(PrefixContractSetInitialReward)),
+                    typeof(RepModFeature).GetMethod(nameof(RepModFeature.PrefixContractSetInitialReward)),
                     null,
                     null,
                     0),
@@ -35,7 +35,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
                             typeof(int), typeof(int), typeof(int)
                         }),
                     null,
-                    typeof(RepModFeature).GetMethod(nameof(PostFixContractConstructor)),
+                    typeof(RepModFeature).GetMethod(nameof(RepModFeature.PostFixContractConstructor)),
                     null,
                     0)
             };
@@ -44,13 +44,13 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.RepMods
 
         public void PostFixContractConstructor(int initialContractValue)
         {
-            Logger.Debug("Patched Contract Constructor!");
+            ModFeatureBase<RepModFeatureSettings>.Logger.Debug("Patched Contract Constructor!");
             initialContractValue = 666;
         }
 
         public static bool PrefixContractSetInitialReward(Contract __instance, int cbills)
         {
-            Logger.Debug("Modifying cbills for Set Initial Reward...");
+            ModFeatureBase<RepModFeatureSettings>.Logger.Debug("Modifying cbills for Set Initial Reward...");
             cbills *= 1000;
             return true;
         }

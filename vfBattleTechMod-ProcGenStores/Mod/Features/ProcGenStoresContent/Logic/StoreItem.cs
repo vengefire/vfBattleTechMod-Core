@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using BattleTech;
-using BattleTech.UI;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
@@ -42,21 +41,21 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             ProcGenStoreContentFeatureSettings settings)
         {
             // Check tags...
-            if (this.RequiredPlanetTags.Any())
+            if (RequiredPlanetTags.Any())
             {
                 // Check all required tags are present...
                 // Unless we're populating a black market, and they're configured to circumvent required restrictions...
-                if (this.RequiredPlanetTags.Except(planetTags).Any() && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRequiredPlanetTags))
+                if (RequiredPlanetTags.Except(planetTags).Any() && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRequiredPlanetTags))
                 {
                     return (false, 0);
                 }
             }
 
-            if (this.RestrictedPlanetTags.Any() && planetTags.Any(s => this.RestrictedPlanetTags.Contains(s)) && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRestrictedPlanetTags))
+            if (RestrictedPlanetTags.Any() && planetTags.Any(s => RestrictedPlanetTags.Contains(s)) && !(shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventRestrictedPlanetTags))
             {
                 return (false, 0);
             }
-            
+
             var wasPrototypedByOwner = PrototypeDate != null && ownerValueName == PrototypeFaction;
             var wasProducedByOwner = ProductionDate != null && ownerValueName == ProductionFaction;
             var wentExtinct = ExtinctionDate != null;
@@ -78,7 +77,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     {
                         return (true, 2);
                     }
-                    else if (shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventFactionRestrictions)
+
+                    if (shopType == Shop.ShopType.BlackMarket && settings.BlackMarketSettings.CircumventFactionRestrictions)
                     {
                         return (true, 0);
                     }
@@ -118,7 +118,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         {
                             return (true, 0);
                         }
-                        
+
                         // Not common yet, but produced by owner...
                         return (wasProducedByOwner, 2);
                     }
@@ -132,6 +132,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 {
                     return (true, 0);
                 }
+
                 // We're in the prototype period, return true if the owner of the store is the prototype agent...
                 return (wasPrototypedByOwner, 2);
             }
