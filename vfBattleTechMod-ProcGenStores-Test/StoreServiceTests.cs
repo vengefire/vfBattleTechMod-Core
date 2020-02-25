@@ -90,7 +90,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_xl_center"));
         }
         
         [Test]
@@ -115,7 +115,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             procGenSettings.BlackMarketSettings.CircumventFactionRestrictions = true;
             var potentialInventory =
                 storeItemService.IdentifyPotentialInventoryItems(Shop.ShopType.BlackMarket, "TH", blankSystemTagList, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engineslots_compact_center"));
         }
         
         [Test]
@@ -253,7 +253,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
                 {
                     "planet_test_vengefire"
                 }, date, procGenSettings);
-            Assert.IsFalse(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
+            Assert.IsTrue(potentialInventory.Any(item => item.StoreItem.Id == "emod_engine_9000"));
         }
 
         [Test]
@@ -266,7 +266,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
             var planetTags = new List<string> {"planet_pop_large", "planet_pop_small"};
             var planetModifiers = procGenSettings.PlanetTagModifiers
                 .Where(modifier => planetTags.Contains(modifier.Tag)).ToList();
-            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.System, "Planet Vengeance",
+            var storeInventory = storeItemService.GenerateItemsForStore(Shop.ShopType.BlackMarket, "Planet Vengeance",
                 "vengefire", date, blankSystemTagList, planetModifiers, procGenSettings);
         }
     }

@@ -47,6 +47,16 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             List<(StoreItem StoreItem, int BracketBonus)> potentialInventoryItems)
         {
             _logger.Debug("Rolling for inventory stock...");
+
+            if (shopType == Shop.ShopType.BlackMarket)
+            {
+                var minRarityBracket = _rarityBrackets.First(bracket => bracket.Name == settings.BlackMarketSettings.BlackMarketMinBaseRarity);
+                var maxRarityBracket = _rarityBrackets.First(bracket => bracket.Name == settings.BlackMarketSettings.BlackMarketMaxBaseRarity);
+                _logger.Debug($"Trimming black market potential inventory [{potentialInventoryItems.Count} items] by rarity [{settings.BlackMarketSettings.BlackMarketMinBaseRarity}] - [{settings.BlackMarketSettings.BlackMarketMaxBaseRarity}]...");
+                potentialInventoryItems.RemoveAll(tuple => tuple.StoreItem.RarityBracket.Order < minRarityBracket.Order || tuple.StoreItem.RarityBracket.Order > maxRarityBracket.Order);
+                _logger.Debug($"Trimmed black market potential inventory to [{potentialInventoryItems.Count} items] by rarity [{settings.BlackMarketSettings.BlackMarketMinBaseRarity}] - [{settings.BlackMarketSettings.BlackMarketMaxBaseRarity}]...");
+            }
+            
             var inventoryItems = new List<StoreItem>();
             var random = new Random();
             var cascadeRollOrder =
@@ -145,6 +155,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             switch (shopType)
             {
                 case Shop.ShopType.System:
+                case Shop.ShopType.BlackMarket: 
                     StoreItems.ForEach(
                         item =>
                         {
