@@ -13,7 +13,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
     public class ProcGenStoreContentFeature : ModFeatureBase<ProcGenStoreContentFeatureSettings>
     {
         private new static ProcGenStoreContentFeature Myself;
-        private DateTime _lastGenDateTime;
+        // private DateTime _lastGenDateTime;
+        private Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime> _lastGenDateTime = new Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime>(); 
 
         public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType =
             new Dictionary<BattleTechResourceType, ShopItemType>
@@ -69,23 +70,25 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
-            if (ProcGenStoreContentFeature.Myself._lastGenDateTime != null)
+            var shopType = __instance.ThisShopType;
+            var starSystemName = ___system.Name;
+            var key = (starSystemName, shopType);
+            if (Myself._lastGenDateTime.ContainsKey(key))
             {
-                var difference = DateTime.Now - ProcGenStoreContentFeature.Myself._lastGenDateTime;
+                var difference = DateTime.Now - ProcGenStoreContentFeature.Myself._lastGenDateTime[key];
                 if (difference.TotalMinutes < 1)
                 {
-                    ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Shop refresh request < 1 minute ago, skipping...");
+                    ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"Shop refresh request for [{key}] < 1 minute ago, skipping...");
                     return false;
-                }
+                } 
             }
 
-            ProcGenStoreContentFeature.Myself._lastGenDateTime = DateTime.Now;
+            ProcGenStoreContentFeature.Myself._lastGenDateTime[key] = DateTime.Now;
 
             ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Injecting custom shop inventory...");
             __instance.Clear();
 
             var owningSystemTags = ___system.Tags.ToList();
-            var shopType = __instance.ThisShopType;
             var currentDate = ___Sim.CurrentDate;
             var owningFaction = ___system.OwnerValue;
 
