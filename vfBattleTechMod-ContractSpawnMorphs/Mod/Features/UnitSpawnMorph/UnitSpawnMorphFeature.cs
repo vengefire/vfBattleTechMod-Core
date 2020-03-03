@@ -33,6 +33,8 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
 
         public static void MetadataDatabase_GetMatchingUnitDefs_Postfix(MetadataDatabase __instance, DateTime? currentDate, ref List<UnitDef_MDD> __result)
         {
+            Logger.Debug($"Executing [{nameof(UnitSpawnMorphFeature.MetadataDatabase_GetMatchingUnitDefs_Postfix)}],\r\n" +
+                         $"matchingDataByTagSet = [{string.Join("\r\n", __result.Select(defMdd => defMdd.UnitDefID))}]...");
             // Alias the keywords for readability...
             var mdd = __instance;
             var matchingDataByTagSet = __result;
@@ -44,13 +46,18 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
             var unitsGroupedByPrefab = matchingDataByTagSet
                 .Select(defMdd => new {unitDefMdd = defMdd, mechDef = simGameState.DataManager.MechDefs.First(pair => pair.Key == defMdd.UnitDefID).Value})
                 .GroupBy(arg => arg.mechDef.Chassis.PrefabIdentifier, arg => arg, (s, enumerable) => new {Base = s, Units = enumerable}).ToList();
+            
+            Logger.Debug($"Grouped result list into [\r\n" +
+                         $"{string.Join("\r\n", unitsGroupedByPrefab.Select(arg => $"[{arg.Base}] -> {string.Join(", ", arg.Units.Select(arg1 => arg1.mechDef.Description.Id))}"))}]");
 
             // var prefabVariantsOccuringOnce = unitsGroupedByPrefab.Where(arg => arg.Units.Count() == 1).SelectMany(arg => arg.Units).ToList();
             foreach (var prefabGroup in unitsGroupedByPrefab)
             {
+                Logger.Trace($"Processing units for prefab [{prefabGroup.Base}]...");
                 var prefabSelectionList = new List<UnitDef_MDD>();
                 foreach (var unit in prefabGroup.Units)
                 {
+                    Logger.Trace($"Processing unit [{unit.mechDef.Description.Id}], CurrentDate = [{currentDate}], MinAppearanceDate = [{unit.mechDef.MinAppearanceDate}]...");
                     // For mechs with an appearance date (and current date is set, which it should always be)
                     // 1. Each entry gets a rarityWeighting + 1 per 30 days since appearance date has passed
                     // 2. To a maximum of 6 (so mechs that appeared at least 180 days prior to the current date receive the maximum rarity weighting)
@@ -62,18 +69,38 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                         var roundedDays = Math.Min(1, Math.Round(((currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1) / UnitSpawnMorphFeature.Myself.Settings.RarityWeightingDaysDivisor, 0));
                         var rawRarity = Convert.ToInt32(roundedDays);
                         rarityWeighting = Math.Min(rawRarity, UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting);
+                        Logger.Trace($"Rounded Days = [{roundedDays}]\r\n" +
+                                     $"Raw Rarity = [{rawRarity}]\r\n" +
+                                     $"Final Rarity Rating = [{rarityWeighting}]");
                     }
 
                     // Insert multiple copies of unitDefMdd to influence the RNG selection weighted by rarity, appropriately...
-                    for (var i = 0; i < rarityWeighting; i++) prefabSelectionList.Append(unit.unitDefMdd);
+                    for (var i = 0; i < rarityWeighting; i++)
+                    {
+                        prefabSelectionList.Append(unit.unitDefMdd);
+                    }
                 }
 
+                var prefabSelectionListGroupByPrefab = prefabSelectionList
+                    .Select(defMdd => new {unitDefMdd = defMdd, mechDef = simGameState.DataManager.MechDefs.First(pair => pair.Key == defMdd.UnitDefID).Value})
+                    .GroupBy(arg => arg.unitDefMdd.UnitDefID, arg => arg, (s, enumerable) => new {Base = s, units = enumerable});
+                
+                Logger.Debug($"Final Prefab Selection List = [\r\n" +
+                             $"{string.Join("\r\n", prefabSelectionListGroupByPrefab.Select(arg => $"[{arg.Base}] - Count [{arg.units.Count()}]"))}" +
+                             $"]");
+
                 // Select one variant of the prefab base to include as an option in the filtered list...
+                Logger.Trace($"Shuffling prefab selection list...");
                 prefabSelectionList.Shuffle();
                 var selectedPrefabVariant = prefabSelectionList[0];
+                Logger.Trace($"Selected [{selectedPrefabVariant.UnitDefID} for inclusion in final filtered list...]");
                 filteredList.Append(selectedPrefabVariant);
             }
 
+            Logger.Debug($"Final filtered list = [\r\n" +
+                         $"{string.Join("\r\n", filteredList.Select(defMdd => defMdd.UnitDefID))}" +
+                         $"]");
+            
             __result = filteredList;
         }
 
