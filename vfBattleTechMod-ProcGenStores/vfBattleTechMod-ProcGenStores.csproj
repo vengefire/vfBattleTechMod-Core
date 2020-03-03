@@ -66,8 +66,6 @@
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemService.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeature.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\ProcGenStoreContentFeatureSettings.cs" />
-    <Compile Include="Mod\Features\RepMods\RepModFeature.cs" />
-    <Compile Include="Mod\Features\RepMods\RepModFeatureSettings.cs" />
     <Compile Include="Mod\ProcGenStoresMod.cs" />
     <Compile Include="Mod\ProcGenStoresModSettings.cs" />
     <Compile Include="Program.cs" />

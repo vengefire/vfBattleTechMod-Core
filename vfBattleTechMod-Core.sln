@@ -16,6 +16,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vfBattleTechMod-ProcGenStor
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vfBattleTechMod-Core-Tests", "vfBattleTechMod-Core-Tests\vfBattleTechMod-Core-Tests.csproj", "{82B1DC6D-BA3E-430B-A616-1DD74A18E8DB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "vfBattleTechMod-ContractSpawnMorphs", "vfBattleTechMod-ContractSpawnMorphs\vfBattleTechMod-ContractSpawnMorphs.csproj", "{9BF41236-A02C-4397-906F-2A8F3B47BB8E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -38,6 +40,10 @@ Global
 		{82B1DC6D-BA3E-430B-A616-1DD74A18E8DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{82B1DC6D-BA3E-430B-A616-1DD74A18E8DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{82B1DC6D-BA3E-430B-A616-1DD74A18E8DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9BF41236-A02C-4397-906F-2A8F3B47BB8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9BF41236-A02C-4397-906F-2A8F3B47BB8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9BF41236-A02C-4397-906F-2A8F3B47BB8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9BF41236-A02C-4397-906F-2A8F3B47BB8E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
