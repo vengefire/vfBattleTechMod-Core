@@ -55,15 +55,13 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                     // 1. Each entry gets a rarityWeighting + 1 per 30 days since appearance date has passed
                     // 2. To a maximum of 6 (so mechs that appeared at least 180 days prior to the current date receive the maximum rarity weighting)
                     // These following two variables ought to be set via [Settings] in the mod.json...
-                    var rarityWeightingDaysDivisor = 30.0; // One additional rarity point per 30 elapsed days...
-                    var maxRarityWeighting = 6; // Maximum rarity points (max 6 * 30 days = 180 days until max rarity bonus is reached, or ~6 months)
-                    var rarityWeighting = maxRarityWeighting;
+                    var rarityWeighting = UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting;
                     if (currentDate != null && unit.mechDef.MinAppearanceDate != null)
                     {
                         // Could do this in only one statement, but that ended up being a little kludgy and hard to read...
-                        var roundedDays = Math.Round(((currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1) / rarityWeightingDaysDivisor, 0);
+                        var roundedDays = Math.Min(1, Math.Round(((currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1) / UnitSpawnMorphFeature.Myself.Settings.RarityWeightingDaysDivisor, 0));
                         var rawRarity = Convert.ToInt32(roundedDays);
-                        rarityWeighting = Math.Min(rawRarity, maxRarityWeighting);
+                        rarityWeighting = Math.Min(rawRarity, UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting);
                     }
 
                     // Insert multiple copies of unitDefMdd to influence the RNG selection weighted by rarity, appropriately...
