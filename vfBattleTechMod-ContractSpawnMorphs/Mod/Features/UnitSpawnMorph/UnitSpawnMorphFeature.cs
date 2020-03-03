@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using BattleTech;
 using BattleTech.Data;
+using HBS.Collections;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
 
@@ -22,19 +23,32 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
             new List<IModPatchDirective>
             {
                 new ModPatchDirective(
-                    typeof(MetadataDatabase).GetMethod("GetMatchingUnitDefs"),
+                    typeof(TagSetQueryExtensions).GetMethod("GetMatchingUnitDefs"),
                     null,
-                    typeof(UnitSpawnMorphFeature).GetMethod("MetadataDatabase_GetMatchingUnitDefs_Postfix"),
+                    typeof(UnitSpawnMorphFeature).GetMethod("TagSetQueryExtensions_GetMatchingUnitDefs_Postfix"),
                     null,
                     0)
             };
 
         public override string Name => "Procedurally Morph Contract Unit Spawns";
 
-        public static void MetadataDatabase_GetMatchingUnitDefs_Postfix(MetadataDatabase __instance, DateTime? currentDate, ref List<UnitDef_MDD> __result)
+        public static void TagSetQueryExtensions_GetMatchingUnitDefs_Postfix(MetadataDatabase __instance, TagSet requiredTags, DateTime? currentDate, ref List<UnitDef_MDD> __result)
         {
-            Logger.Debug($"Executing [{nameof(UnitSpawnMorphFeature.MetadataDatabase_GetMatchingUnitDefs_Postfix)}],\r\n" +
-                         $"matchingDataByTagSet = [{string.Join("\r\n", __result.Select(defMdd => defMdd.UnitDefID))}]...");
+            Logger.Debug($"Executing [{nameof(UnitSpawnMorphFeature.TagSetQueryExtensions_GetMatchingUnitDefs_Postfix)}],\r\n" +
+                         $"RequiredTags = [{string.Join(", ", requiredTags)}]\r\n" +
+                         $"MatchingDataByTagSet = [{string.Join("\r\n", __result.Select(defMdd => defMdd.UnitDefID))}]...");
+            
+            if (requiredTags.Contains("unit_vehicle") || requiredTags.Contains("unit_turret"))
+            {
+                Logger.Debug($"Bypassing lance spawn morph as required tags are not looking for mechs...");
+                return;
+            }
+            else if (__result.Count == 0)
+            {
+                Logger.Debug($"Bypassing lance spawn morph as initial result is empty...");
+                return;
+            }
+            
             // Alias the keywords for readability...
             var mdd = __instance;
             var matchingDataByTagSet = __result;
@@ -48,7 +62,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                 .GroupBy(arg => arg.mechDef.Chassis.PrefabIdentifier, arg => arg, (s, enumerable) => new {Base = s, Units = enumerable}).ToList();
             
             Logger.Debug($"Grouped result list into [\r\n" +
-                         $"{string.Join("\r\n", unitsGroupedByPrefab.Select(arg => $"[{arg.Base}] -> {string.Join(", ", arg.Units.Select(arg1 => arg1.mechDef.Description.Id))}"))}]");
+                         $"{string.Join("\r\n", unitsGroupedByPrefab.Select(arg => $"[{arg.Base}] -> {string.Join(", ", arg.Units.Select(arg1 => arg1.unitDefMdd.UnitDefID))}"))}]");
 
             // var prefabVariantsOccuringOnce = unitsGroupedByPrefab.Where(arg => arg.Units.Count() == 1).SelectMany(arg => arg.Units).ToList();
             foreach (var prefabGroup in unitsGroupedByPrefab)
@@ -66,21 +80,30 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                     if (currentDate != null && unit.mechDef.MinAppearanceDate != null)
                     {
                         // Could do this in only one statement, but that ended up being a little kludgy and hard to read...
-                        var roundedDays = Math.Min(1, Math.Round(((currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1) / UnitSpawnMorphFeature.Myself.Settings.RarityWeightingDaysDivisor, 0));
+                        var rawDays = (currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1;
+                        var roundedDays = Math.Round(rawDays / UnitSpawnMorphFeature.Myself.Settings.RarityWeightingDaysDivisor, 0);
                         var rawRarity = Convert.ToInt32(roundedDays);
                         rarityWeighting = Math.Min(rawRarity, UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting);
-                        Logger.Trace($"Rounded Days = [{roundedDays}]\r\n" +
-                                     $"Raw Rarity = [{rawRarity}]\r\n" +
+                        if (rarityWeighting <= 0)
+                        {
+                            Logger.Debug($"Rarity negative for [{unit.unitDefMdd.UnitDefID}], fixing to 1...");
+                            rarityWeighting = 1;
+                        }
+                        Logger.Trace($"Raw Days = [{rawDays}], " +
+                                     $"Rounded Days = [{roundedDays}], " +
+                                     $"Raw Rarity = [{rawRarity}], " +
                                      $"Final Rarity Rating = [{rarityWeighting}]");
                     }
 
                     // Insert multiple copies of unitDefMdd to influence the RNG selection weighted by rarity, appropriately...
                     for (var i = 0; i < rarityWeighting; i++)
                     {
-                        prefabSelectionList.Append(unit.unitDefMdd);
+                        Logger.Trace($"Adding [{unit.unitDefMdd.UnitDefID}] to prefabSelectionList...");
+                        prefabSelectionList.Add(unit.unitDefMdd);
                     }
                 }
 
+                Logger.Trace($"PrefabSelectionList count = [{prefabSelectionList.Count}]");
                 var prefabSelectionListGroupByPrefab = prefabSelectionList
                     .Select(defMdd => new {unitDefMdd = defMdd, mechDef = simGameState.DataManager.MechDefs.First(pair => pair.Key == defMdd.UnitDefID).Value})
                     .GroupBy(arg => arg.unitDefMdd.UnitDefID, arg => arg, (s, enumerable) => new {Base = s, units = enumerable});
@@ -94,7 +117,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                 prefabSelectionList.Shuffle();
                 var selectedPrefabVariant = prefabSelectionList[0];
                 Logger.Trace($"Selected [{selectedPrefabVariant.UnitDefID} for inclusion in final filtered list...]");
-                filteredList.Append(selectedPrefabVariant);
+                filteredList.Add(selectedPrefabVariant);
             }
 
             Logger.Debug($"Final filtered list = [\r\n" +
