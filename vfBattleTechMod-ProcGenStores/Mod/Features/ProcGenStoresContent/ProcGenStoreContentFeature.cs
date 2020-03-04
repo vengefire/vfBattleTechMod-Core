@@ -13,8 +13,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
     public class ProcGenStoreContentFeature : ModFeatureBase<ProcGenStoreContentFeatureSettings>
     {
         private new static ProcGenStoreContentFeature Myself;
+
         // private DateTime _lastGenDateTime;
-        private Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime> _lastGenDateTime = new Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime>(); 
+        private readonly Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime> _lastGenDateTime = new Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime>();
 
         public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType =
             new Dictionary<BattleTechResourceType, ShopItemType>
@@ -44,43 +45,35 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
                     null,
                     null,
                     0)
-                /*new ModPatchDirective(
-                    typeof(Shop).GetMethod("Initialize"),
-                    typeof(ProcGenStoreContentFeature).GetMethod("PrefixInitializeShop"),
-                    null,
-                    null,
-                    0)*/
             };
 
         public override string Name => "Procedurally Generate Store Contents";
 
         public static List<BattleTechResourceType> BattleTechStoreResourceTypes => new List<BattleTechResourceType>
         {
-            BattleTechResourceType.AmmunitionBoxDef, BattleTechResourceType.UpgradeDef,
-            BattleTechResourceType.HeatSinkDef, BattleTechResourceType.JumpJetDef, BattleTechResourceType.WeaponDef
+            BattleTechResourceType.AmmunitionBoxDef,
+            BattleTechResourceType.UpgradeDef,
+            BattleTechResourceType.HeatSinkDef,
+            BattleTechResourceType.JumpJetDef,
+            BattleTechResourceType.WeaponDef,
+            BattleTechResourceType.MechDef
         };
-
-        public static bool PrefixInitializeShop(Shop __instance, ref List<string> collections)
-        {
-            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Noping out of Shop::Initialize.");
-            collections = null;
-            ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug("Noped out of Shop::Initialize.");
-            return true;
-        }
 
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
+            var simGameState = UnityGameInstance.BattleTechGame.Simulation;
+
             var shopType = __instance.ThisShopType;
             var starSystemName = ___system.Name;
             var key = (starSystemName, shopType);
-            if (Myself._lastGenDateTime.ContainsKey(key))
+            if (ProcGenStoreContentFeature.Myself._lastGenDateTime.ContainsKey(key))
             {
                 var difference = DateTime.Now - ProcGenStoreContentFeature.Myself._lastGenDateTime[key];
                 if (difference.TotalMinutes < 1)
                 {
                     ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"Shop refresh request for [{key}] < 1 minute ago, skipping...");
                     return false;
-                } 
+                }
             }
 
             ProcGenStoreContentFeature.Myself._lastGenDateTime[key] = DateTime.Now;
@@ -97,11 +90,13 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
             var storeItems = ProcGenStoreContentFeature.Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name,
                 currentDate, owningSystemTags, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
-            var shopDefItems = storeItems.Select(item =>
-            {
-                return new ShopDefItem(item.Id, ProcGenStoreContentFeature.Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
-                    item.Quantity == -1, false, 0);
-            }).ToList();
+            var shopDefItems = storeItems
+                .Where(item => simGameState.DataManager.ResourceLocator.EntryByID(item.Id, item.Type, true) != null)
+                .Select(item =>
+                {
+                    return new ShopDefItem(item.Id, ProcGenStoreContentFeature.Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
+                        item.Quantity == -1, false, 0);
+                }).ToList();
 
             ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"ShopDefItems = [\r\n{JsonConvert.SerializeObject(shopDefItems, Formatting.Indented)}]");
 

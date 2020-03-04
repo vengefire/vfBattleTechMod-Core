@@ -61,6 +61,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItem.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreService.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItem.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemLoader.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemService.cs" />
