@@ -2,6 +2,7 @@
 using System.IO;
 using HBS.Logging;
 using vfBattleTechMod_Core.Utils.Interfaces;
+using LogLevel = vfBattleTechMod_Core.Utils.Enums.LogLevel;
 
 namespace vfBattleTechMod_Core.Utils
 {
@@ -10,6 +11,16 @@ namespace vfBattleTechMod_Core.Utils
         private readonly ILogAppender logAppender;
 
         private readonly ILog logger;
+        private LogLevel _logLevel;
+
+        public LogLevel LogLevel
+        {
+            get => _logLevel;
+            set
+            {
+                _logLevel = value;
+            }
+        }
 
         public HbsLogger(ILog logger, string directory, string moduleName)
         {
@@ -37,7 +48,10 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Debug(string message)
         {
-            logger.Log(message);
+            if (LogLevel >= LogLevel.Debug)
+            {
+                logger.Log(message);
+            }
         }
 
         public void Error(string message, Exception ex)
@@ -47,7 +61,10 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Trace(string message)
         {
-            logger.LogDebug(message);
+            if (LogLevel >= LogLevel.Trace)
+            {
+                logger.LogDebug(message);
+            }
         }
     }
 }

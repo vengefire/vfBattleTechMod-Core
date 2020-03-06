@@ -1,7 +1,9 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using log4net;
 using log4net.Config;
+using vfBattleTechMod_Core.Utils.Enums;
 using vfBattleTechMod_Core.Utils.Interfaces;
 
 namespace vfBattleTechMod_Core.Utils
@@ -12,7 +14,10 @@ namespace vfBattleTechMod_Core.Utils
 
         static log4NetLogger()
         {
-            XmlConfigurator.Configure(new FileInfo("log4net.config"));
+            var filename = "log4net.config";
+            var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var filePath = Path.Combine(basePath, filename);
+            var result = XmlConfigurator.Configure(new FileInfo(filePath));
         }
 
         public log4NetLogger(string name)
@@ -22,7 +27,10 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Debug(string message)
         {
-            logger.Debug(message);
+            if (LogLevel >= LogLevel.Debug)
+            {
+                logger.Debug(message);
+            }
         }
 
         public void Error(string message, Exception ex)
@@ -32,7 +40,12 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Trace(string message)
         {
-            logger.Info(message);
+            if (LogLevel >= LogLevel.Trace)
+            {
+                logger.Info(message);
+            }
         }
+
+        public LogLevel LogLevel { get; set; }
     }
 }

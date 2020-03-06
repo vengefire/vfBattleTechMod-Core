@@ -54,8 +54,8 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         private void InitialiseLogging(string directory)
         {
-            //this.Logger = new log4NetLogger(this.Name);
-            Logger = new HbsLogger(GetHbsLogger(), Directory, Name);
+            this.Logger = new log4NetLogger(this.Name);
+            //Logger = new HbsLogger(GetHbsLogger(), Directory, Name);
             Logger.Debug($"Initialized logging for [{Name}]");
         }
 

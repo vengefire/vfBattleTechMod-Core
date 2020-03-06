@@ -1,4 +1,5 @@
 ﻿using System;
+using vfBattleTechMod_Core.Utils.Enums;
 using vfBattleTechMod_Core.Utils.Interfaces;
 
 namespace vfBattleTechMod_Core.Utils
@@ -7,7 +8,10 @@ namespace vfBattleTechMod_Core.Utils
     {
         public void Debug(string message)
         {
-            Console.WriteLine(message);
+            if (LogLevel >= LogLevel.Debug)
+            {
+                Console.WriteLine(message);
+            }
         }
 
         public void Error(string message, Exception ex)
@@ -17,7 +21,12 @@ namespace vfBattleTechMod_Core.Utils
 
         public void Trace(string message)
         {
-            Console.WriteLine(message);
+            if (LogLevel >= LogLevel.Trace)
+            {
+                Console.WriteLine(message);
+            }
         }
+
+        public LogLevel LogLevel { get; set; }
     }
 }

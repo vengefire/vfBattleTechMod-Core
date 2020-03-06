@@ -1,4 +1,5 @@
 ﻿using System;
+using vfBattleTechMod_Core.Utils.Enums;
 
 namespace vfBattleTechMod_Core.Utils.Interfaces
 {
@@ -9,5 +10,6 @@ namespace vfBattleTechMod_Core.Utils.Interfaces
         void Error(string message, Exception ex);
 
         void Trace(string message);
+        LogLevel LogLevel { get; set; }
     }
 }

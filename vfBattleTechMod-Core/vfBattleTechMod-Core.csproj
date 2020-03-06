@@ -74,6 +74,7 @@
     <Compile Include="Mods\Interfaces\IModSettings.cs" />
     <Compile Include="Mods\Interfaces\IModSettingsBase.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utils\Enums\LogLevel.cs" />
     <Compile Include="Utils\Interfaces\ILogger.cs" />
     <Compile Include="Utils\HbsLogger.cs" />
     <Compile Include="Utils\log4NetLogger.cs" />
@@ -83,6 +84,5 @@
     <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
