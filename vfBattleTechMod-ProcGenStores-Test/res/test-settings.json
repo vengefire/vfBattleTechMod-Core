@@ -1,5 +1,6 @@
 ﻿{
 	"SomeCoolSetting": "DefaultCoolSetting",
+	"LogLevel": "Trace",
 	"Procedurally Generate Store Contents": {
 		"Enabled": true,
 		"StoreItemSourceFile": "xlrp-store-content.xlsx",

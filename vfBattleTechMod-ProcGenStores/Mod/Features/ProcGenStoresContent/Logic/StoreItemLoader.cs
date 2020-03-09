@@ -152,7 +152,11 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                                 storeItem.ExtinctionDate = new DateTime(Convert.ToInt32(value), 1, 1);
                                 break;
                             case szCommonDate:
-                                storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                DateTime commonDate; 
+                                if (!DateTime.TryParse(value, out commonDate))
+                                {
+                                    storeItem.CommonDate = new DateTime(Convert.ToInt32(value), 1, 1);
+                                }
                                 break;
                             case szAvailability:
                                 storeItem.RarityBracket = rarityBrackets.First(bracket => bracket.Name == value);

@@ -63,6 +63,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
         {
             Logger.Debug("Initializing Features...");
             ModSettings = JsonHelpers.Deserialize<TModSettings>(settings) ?? new TModSettings();
+            Logger.LogLevel = ModSettings.LogLevel;
             var jsonSettings = JsonHelpers.Deserialize(settings);
             ModFeatures.ForEach(
                 feature => feature.Initialize(

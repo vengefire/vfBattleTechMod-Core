@@ -18,7 +18,7 @@ namespace vfBattleTechMod_ProcGenStores_Test
         private string sourceFile;
         private JObject settings;
         private ProcGenStoreContentFeatureSettings procGenSettings;
-        private readonly ILogger logger = new NullLogger();
+        private readonly ILogger logger = new log4NetLogger(nameof(StoreServiceTests));
         private readonly List<string> blankSystemTagList = new List<string>();
 
         [OneTimeSetUp]

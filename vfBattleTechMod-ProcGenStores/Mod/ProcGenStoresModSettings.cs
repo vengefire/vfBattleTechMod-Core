@@ -7,6 +7,5 @@ namespace vfBattleTechMod_ProcGenStores.Mod
     public class ProcGenStoresModSettings : ModSettingsBase, IModSettings
     {
         public string SomeCoolSetting = @"DefaultCodedCoolSetting";
-        public LogLevel LogLevel { get; set; } = LogLevel.Debug;
     }
 }

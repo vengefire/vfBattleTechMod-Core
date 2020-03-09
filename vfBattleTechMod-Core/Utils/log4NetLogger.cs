@@ -17,12 +17,19 @@ namespace vfBattleTechMod_Core.Utils
             var filename = "log4net.config";
             var basePath = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var filePath = Path.Combine(basePath, filename);
+
+            if (!File.Exists(filePath))
+            {
+                throw new InvalidProgramException($"Failed to find logging config file [{filePath}]");
+            }
+            
             var result = XmlConfigurator.Configure(new FileInfo(filePath));
         }
 
         public log4NetLogger(string name)
         {
             logger = LogManager.GetLogger(name);
+            LogLevel = LogLevel.Trace;
         }
 
         public void Debug(string message)

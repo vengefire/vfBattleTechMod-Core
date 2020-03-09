@@ -7,6 +7,5 @@ namespace vfBattleTechMod_Template.Mod
     public class TemplateModSettings : ModSettingsBase, IModSettings
     {
         public string SomeCoolSetting = @"DefaultCodedCoolSetting";
-        public LogLevel LogLevel { get; set; } = LogLevel.Debug;
     }
 }
