@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using BattleTech;
+using BattleTech.Rendering;
 using Newtonsoft.Json;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
@@ -16,6 +17,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         // private DateTime _lastGenDateTime;
         private readonly Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime> _lastGenDateTime = new Dictionary<(string StarSystemName, Shop.ShopType ShopType), DateTime>();
+
+        private ProcGenStoreService _procGenStoreService;
 
         public Dictionary<BattleTechResourceType, ShopItemType> dictResourceTypeToShopitemType =
             new Dictionary<BattleTechResourceType, ShopItemType>
@@ -62,6 +65,23 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
         {
             var simGameState = UnityGameInstance.BattleTechGame.Simulation;
+
+            if (Myself._procGenStoreService == null)
+            {
+                try
+                {
+                    Myself._procGenStoreService = new ProcGenStoreService(Logger, Myself.Settings.RarityBrackets,
+                        BattleTechStoreResourceTypes);
+                }
+                catch (TypeLoadException ex)
+                {
+                    Logger.Error($"A Type Load error occurred populating store items from the data manager, message = [{ex.Message}]", ex);
+                }
+                catch (Exception ex)
+                {
+                    Logger.Error($"An error occurred populating store items from the data manager", ex);
+                }
+            }
 
             var shopType = __instance.ThisShopType;
             var starSystemName = ___system.Name;
