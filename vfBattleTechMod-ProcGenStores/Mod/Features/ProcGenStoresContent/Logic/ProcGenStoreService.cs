@@ -113,7 +113,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
                         !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
                     .ToList();
-                ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(rawItemsListSansTemplates.Select(
+                var itemDetails = rawItemsListSansTemplates.Select(
                     o =>
                     {
                         var description = GetObjectDescriptionByType(storeResourceType, o);
@@ -150,14 +150,16 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                             _rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
                             exclusionTags);
                     }
-                ).ToList());
+                ).ToList();
+                ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(itemDetails);
 
                 ProcGenStoreService._logger.Debug(
                     $"Added [{ProcGenStoreService.StoreItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
 
             ProcGenStoreService._logger.Debug(
-                $"Mechs without appearance dates = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
+                $"Mechs without appearance dates (and therefore removed) = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
+            StoreItemsByType[BattleTechResourceType.MechDef].RemoveAll(item => !item.MinAppearanceDate.HasValue);
         }
 
         private static string AvailabilityFilePath =>
