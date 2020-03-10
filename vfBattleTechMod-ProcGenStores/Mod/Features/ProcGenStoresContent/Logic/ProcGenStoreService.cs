@@ -6,7 +6,6 @@ using System.Linq;
 using System.Reflection;
 using BattleTech;
 using HBS.Collections;
-using HBS.Util;
 using vfBattleTechMod_Core.Utils.Interfaces;
 using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.MetaDataHelpers;
 
@@ -14,34 +13,34 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
     public class ProcGenStoreService
     {
-        private static List<ProcGenStoreContentFeatureSettings.RarityBracket> RarityBrackets;
+        private static List<ProcGenStoreContentFeatureSettings.RarityBracket> _rarityBrackets;
 
         private static readonly Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> StoreItemsByType
             = new Dictionary<BattleTechResourceType, List<ProcGenStoreItem>>();
 
-        private static ILogger Logger;
+        private static ILogger _logger;
 
         public ProcGenStoreService(ILogger logger,
             ProcGenStoreContentFeatureSettings settings,
             List<BattleTechResourceType> storeResourceTypes
         )
         {
-            ProcGenStoreService.Logger = logger;
+            ProcGenStoreService._logger = logger;
             ProcGenStoreService.Settings = settings;
-            ProcGenStoreService.RarityBrackets = settings.RarityBrackets;
+            ProcGenStoreService._rarityBrackets = settings.RarityBrackets;
 
             storeResourceTypes.ForEach(type => StoreItemsByType[type] = new List<ProcGenStoreItem>());
 
             logger.Debug($"Loading items from data manager...");
             LoadItemsFromDataManager();
-            Logger.Debug($"Items loaded from data manager.");
+            _logger.Debug($"Items loaded from data manager.");
         }
 
         public static ProcGenStoreContentFeatureSettings Settings { get; set; }
 
         private void LoadItemsFromDataManager()
         {
-            ProcGenStoreService.Logger.Debug($"Building items lists from Data Manager...");
+            ProcGenStoreService._logger.Debug($"Building items lists from Data Manager...");
             var simGame = UnityGameInstance.BattleTechGame.Simulation;
             var rarityMap = new List<(int min, int max, string bracket)>
             {
@@ -74,18 +73,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             {
                 return type switch
                 {
-                    BattleTechResourceType.AmmunitionBoxDef => simGame.DataManager.AmmoBoxDefs
-                        .Select(pair => pair.Value).Cast<object>().ToList(),
-                    BattleTechResourceType.UpgradeDef => simGame.DataManager.UpgradeDefs.Select(pair => pair.Value)
-                        .Cast<object>().ToList(),
-                    BattleTechResourceType.HeatSinkDef => simGame.DataManager.HeatSinkDefs.Select(pair => pair.Value)
-                        .Cast<object>().ToList(),
-                    BattleTechResourceType.JumpJetDef => simGame.DataManager.JumpJetDefs.Select(pair => pair.Value)
-                        .Cast<object>().ToList(),
-                    BattleTechResourceType.WeaponDef => simGame.DataManager.WeaponDefs.Select(pair => pair.Value)
-                        .Cast<object>().ToList(),
-                    BattleTechResourceType.MechDef => simGame.DataManager.MechDefs.Select(pair => pair.Value)
-                        .Cast<object>().ToList(),
+                    BattleTechResourceType.AmmunitionBoxDef => simGame.DataManager.AmmoBoxDefs.Select(pair => (object)pair.Value).ToList(),
+                    BattleTechResourceType.UpgradeDef => simGame.DataManager.UpgradeDefs.Select(pair => (object)pair.Value).ToList(),
+                    BattleTechResourceType.HeatSinkDef => simGame.DataManager.HeatSinkDefs.Select(pair => (object)pair.Value).ToList(),
+                    BattleTechResourceType.JumpJetDef => simGame.DataManager.JumpJetDefs.Select(pair => (object)pair.Value).ToList(),
+                    BattleTechResourceType.WeaponDef => simGame.DataManager.WeaponDefs.Select(pair => (object)pair.Value).ToList(),
+                    BattleTechResourceType.MechDef => simGame.DataManager.MechDefs.Select(pair => (object)pair.Value).ToList(),
                     _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
                 };
             }
@@ -104,25 +97,21 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 };
             }
 
-            Logger.Debug($"Parsing backup canon availability data...");
-            var mechAppearanceData = MechModel.ProcessAvailabilityFile(Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Settings.MechAppearanceFile));
+            _logger.Debug($"Parsing backup canon availability data...");
+            var mechAppearanceData = MechModel.ProcessAvailabilityFile(AvailabilityFilePath);
 
             foreach (var storeResourceType in ProcGenStoreService.StoreItemsByType.Keys)
             {
-                ProcGenStoreService.Logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
+                ProcGenStoreService._logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
                 var rawItemsList = GetObjectListByType(storeResourceType, simGame);
-                var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
-                        !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
-                    .ToList();
+                var rawItemsListSansTemplates = rawItemsList.Where(theObject => !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template")).ToList();
                 ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(rawItemsListSansTemplates.Select(
                     o =>
                     {
                         var description = GetObjectDescriptionByType(storeResourceType, o);
                         string id = description.Id;
                         float definedRarity = description.Rarity;
-                        var mappedRarity =
-                            rarityMap.First(tuple => definedRarity < tuple.max && definedRarity >= tuple.min);
+                        var mappedRarity = rarityMap.First(tuple => definedRarity < tuple.max && definedRarity >= tuple.min);
                         var tagSet = GetTagsByType(storeResourceType, o);
 
                         var containingShopDefinitions = simGame.DataManager.Shops
@@ -132,41 +121,53 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                                 def.Specials.Select(item => item.ID).Contains(id))
                             .ToList();
 
-                        var requiredTags = containingShopDefinitions.SelectMany(def => def.RequirementTags).Distinct()
-                            .ToList();
-                        var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct()
-                            .ToList();
+                        var requiredTags = containingShopDefinitions.SelectMany(def => def.RequirementTags).Distinct().ToList();
+                        var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct().ToList();
 
                         DateTime? appearanceDate = null;
-                        if (o is MechDef mechDef)
-                        {
-                            var mechModelEntry = mechAppearanceData.FirstOrDefault(model =>
-                                model.Name.Trim('"') == mechDef.Description.UIName);
-                            if (mechModelEntry != null)
-                            {
-                                appearanceDate = new DateTime(mechModelEntry.Year, 1, 1);
-                            }
+                        appearanceDate = GetAppearanceDate(o, mechAppearanceData);
 
-                            appearanceDate = mechDef.MinAppearanceDate ?? appearanceDate;
-                        }
-
-                        ProcGenStoreService.Logger.Trace(
+                        ProcGenStoreService._logger.Trace(
                             $"Adding [{storeResourceType.ToString()}] - [{description.Id}]|" +
                             $"minAppearanceDate = [{appearanceDate.ToString()}]|" +
                             $"definedRarity = [{definedRarity.ToString(CultureInfo.InvariantCulture)}, mappedRarity = [{mappedRarity.bracket}]]|" +
                             $"tagSet = [{string.Join(",", tagSet)}]|" +
                             $"requiredTags = [{string.Join(", ", requiredTags)}]|" +
                             $"exclusionTags = [{string.Join(", ", exclusionTags)}].");
+                        
                         return new ProcGenStoreItem(storeResourceType, description.Id, appearanceDate, tagSet,
-                            RarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
+                            _rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
                             exclusionTags);
                     }
                 ).ToList());
-                ProcGenStoreService.Logger.Debug(
+                
+                ProcGenStoreService._logger.Debug(
                     $"Added [{ProcGenStoreService.StoreItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
-            ProcGenStoreService.Logger.Debug(
+            
+            ProcGenStoreService._logger.Debug(
                 $"Mechs without appearance dates = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
+        }
+
+        private static string AvailabilityFilePath =>
+            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidProgramException($"Executing Assembly Location cannot be null."), Settings.MechAppearanceFile);
+
+        private static DateTime? GetAppearanceDate(object o, List<MechModel> mechAppearanceData)
+        {
+            DateTime? appearanceDate = null;
+            if (o is MechDef mechDef)
+            {
+                var mechModelEntry = mechAppearanceData.FirstOrDefault(model =>
+                    model.Name.Trim('"') == mechDef.Description.UIName);
+                if (mechModelEntry != null)
+                {
+                    appearanceDate = new DateTime(mechModelEntry.Year, 1, 1);
+                }
+
+                appearanceDate = mechDef.MinAppearanceDate ?? appearanceDate;
+            }
+
+            return appearanceDate;
         }
     }
 }
