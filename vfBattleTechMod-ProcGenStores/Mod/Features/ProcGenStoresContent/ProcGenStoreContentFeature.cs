@@ -72,10 +72,6 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
                 {
                     Myself._procGenStoreService = new ProcGenStoreService(Logger, Myself.Settings, BattleTechStoreResourceTypes);
                 }
-                catch (TypeLoadException ex)
-                {
-                    Logger.Error($"A Type Load error occurred populating store items from the data manager, message = [{ex.Message}]", ex);
-                }
                 catch (Exception ex)
                 {
                     Logger.Error($"An error occurred populating store items from the data manager", ex);
@@ -85,6 +81,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var shopType = __instance.ThisShopType;
             var starSystemName = ___system.Name;
             var key = (starSystemName, shopType);
+            
             if (ProcGenStoreContentFeature.Myself._lastGenDateTime.ContainsKey(key))
             {
                 var difference = DateTime.Now - ProcGenStoreContentFeature.Myself._lastGenDateTime[key];
