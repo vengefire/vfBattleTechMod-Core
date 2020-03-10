@@ -2,7 +2,7 @@
 using vfBattleTechMod_Core.Utils.Enums;
 using vfBattleTechMod_Core.Utils.Interfaces;
 
-namespace vfBattleTechMod_Core.Utils
+namespace vfBattleTechMod_Core.Utils.Loggers
 {
     public class NullLogger : ILogger
     {

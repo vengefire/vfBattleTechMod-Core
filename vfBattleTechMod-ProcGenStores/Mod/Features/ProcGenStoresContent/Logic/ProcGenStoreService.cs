@@ -1,75 +1,43 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using BattleTech;
 using HBS.Collections;
-using Newtonsoft.Json;
+using HBS.Util;
 using vfBattleTechMod_Core.Utils.Interfaces;
+using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.MetaDataHelpers;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
     public class ProcGenStoreService
     {
-        public static Dictionary<BattleTechResourceType, List<dynamic>> StoreResourceTypesDictionary { get; set; }
-
         private static List<ProcGenStoreContentFeatureSettings.RarityBracket> RarityBrackets;
 
-        private static Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> StoreItemsByType
+        private static readonly Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> StoreItemsByType
             = new Dictionary<BattleTechResourceType, List<ProcGenStoreItem>>();
 
         private static ILogger Logger;
 
         public ProcGenStoreService(ILogger logger,
-            List<ProcGenStoreContentFeatureSettings.RarityBracket> rarityBrackets,
+            ProcGenStoreContentFeatureSettings settings,
             List<BattleTechResourceType> storeResourceTypes
         )
         {
             ProcGenStoreService.Logger = logger;
-            ProcGenStoreService.RarityBrackets = rarityBrackets;
+            ProcGenStoreService.Settings = settings;
+            ProcGenStoreService.RarityBrackets = settings.RarityBrackets;
 
-            dynamic test = new List<int>() {1};
-            Logger.Debug($"Count = [{test.Count}]");
+            storeResourceTypes.ForEach(type => StoreItemsByType[type] = new List<ProcGenStoreItem>());
 
-            /*var simGame = UnityGameInstance.BattleTechGame.Simulation;
-            var dataManager = simGame.DataManager;
-            var firstMech = dataManager.MechDefs.First().Value;
-            dynamic dynamicMech = firstMech;
-            Logger.Debug($"Test First Mech = [{firstMech.Description.Id}]");
-            Logger.Debug($"Test First Dynamic Mech = [{dynamicMech.ToString()}]");
-
-            List<dynamic> GetItemsByType(BattleTechResourceType type, SimGameState simGameState)
-            {
-                return type switch
-                {
-                    BattleTechResourceType.AmmunitionBoxDef => simGameState.DataManager.AmmoBoxDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    BattleTechResourceType.UpgradeDef => simGameState.DataManager.UpgradeDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    BattleTechResourceType.HeatSinkDef => simGameState.DataManager.HeatSinkDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    BattleTechResourceType.JumpJetDef => simGameState.DataManager.JumpJetDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    BattleTechResourceType.WeaponDef => simGameState.DataManager.WeaponDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    BattleTechResourceType.MechDef => simGameState.DataManager.MechDefs.Select(pair => (dynamic) pair.Value).ToList(),
-                    _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
-                };
-            }
-
-            Logger.Debug($"Constructing type->object dictionary...");
-            ProcGenStoreService.StoreResourceTypesDictionary = storeResourceTypes
-                .Select(type => new
-                    {Key = type, Value = GetItemsByType(type, UnityGameInstance.BattleTechGame.Simulation)})
-                .ToDictionary(arg => arg.Key, arg => arg.Value);
-
-            Logger.Debug($"type->object dictionary constructed.");
-
-            Logger.Debug($"StoreResourceTypesDictionary.Keys = [{string.Join("\r\n", StoreResourceTypesDictionary.Keys)}]");
-            // Init store items list...
-            StoreResourceTypesDictionary.Keys.ToList().ForEach(type =>
-            {
-                Logger.Debug($"Instancing up ProcGenStoreItemList for [{type}]...");
-                ProcGenStoreService.StoreItemsByType[type] = new List<ProcGenStoreItem>();
-            });
-
-            Logger.Debug($"ProcGenStoreService.StoreItemsByType initialised.");
-            LoadItemsFromDataManager();*/
+            logger.Debug($"Loading items from data manager...");
+            LoadItemsFromDataManager();
+            Logger.Debug($"Items loaded from data manager.");
         }
+
+        public static ProcGenStoreContentFeatureSettings Settings { get; set; }
 
         private void LoadItemsFromDataManager()
         {
@@ -87,48 +55,72 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             };
             rarityMap.Reverse();
 
-            static TagSet GetTagsByType(BattleTechResourceType type, dynamic theObject)
+            static TagSet GetTagsByType(BattleTechResourceType type, object theObject)
             {
                 switch (type)
                 {
-                    case BattleTechResourceType.AmmunitionBoxDef:
-                    case BattleTechResourceType.UpgradeDef:
-                    case BattleTechResourceType.HeatSinkDef:
-                    case BattleTechResourceType.JumpJetDef:
-                    case BattleTechResourceType.WeaponDef:
-                        return theObject.ComponentTags;
-                    case BattleTechResourceType.MechDef:
-                        return theObject.MechTags;
+                    case BattleTechResourceType.AmmunitionBoxDef: return ((AmmunitionBoxDef) theObject).ComponentTags;
+                    case BattleTechResourceType.UpgradeDef: return ((UpgradeDef) theObject).ComponentTags;
+                    case BattleTechResourceType.HeatSinkDef: return ((HeatSinkDef) theObject).ComponentTags;
+                    case BattleTechResourceType.JumpJetDef: return ((JumpJetDef) theObject).ComponentTags;
+                    case BattleTechResourceType.WeaponDef: return ((WeaponDef) theObject).ComponentTags;
+                    case BattleTechResourceType.MechDef: return ((MechDef) theObject).MechTags;
                     default:
                         throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.");
                 }
             }
-            
-            static dynamic GetDynamicObjectByType(BattleTechResourceType type, object theObject)
+
+            static List<object> GetObjectListByType(BattleTechResourceType type, SimGameState simGame)
             {
                 return type switch
                 {
-                    BattleTechResourceType.AmmunitionBoxDef => (dynamic) (AmmunitionBoxDef) theObject,
-                    BattleTechResourceType.UpgradeDef => (UpgradeDef) theObject,
-                    BattleTechResourceType.HeatSinkDef => (HeatSinkDef) theObject,
-                    BattleTechResourceType.JumpJetDef => (JumpJetDef) theObject,
-                    BattleTechResourceType.WeaponDef => (WeaponDef) theObject,
-                    BattleTechResourceType.MechDef => (MechDef) theObject,
+                    BattleTechResourceType.AmmunitionBoxDef => simGame.DataManager.AmmoBoxDefs
+                        .Select(pair => pair.Value).Cast<object>().ToList(),
+                    BattleTechResourceType.UpgradeDef => simGame.DataManager.UpgradeDefs.Select(pair => pair.Value)
+                        .Cast<object>().ToList(),
+                    BattleTechResourceType.HeatSinkDef => simGame.DataManager.HeatSinkDefs.Select(pair => pair.Value)
+                        .Cast<object>().ToList(),
+                    BattleTechResourceType.JumpJetDef => simGame.DataManager.JumpJetDefs.Select(pair => pair.Value)
+                        .Cast<object>().ToList(),
+                    BattleTechResourceType.WeaponDef => simGame.DataManager.WeaponDefs.Select(pair => pair.Value)
+                        .Cast<object>().ToList(),
+                    BattleTechResourceType.MechDef => simGame.DataManager.MechDefs.Select(pair => pair.Value)
+                        .Cast<object>().ToList(),
                     _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
                 };
             }
 
+            static DescriptionDef GetObjectDescriptionByType(BattleTechResourceType type, object theObject)
+            {
+                return type switch
+                {
+                    BattleTechResourceType.AmmunitionBoxDef => ((AmmunitionBoxDef) theObject).Description,
+                    BattleTechResourceType.UpgradeDef => ((UpgradeDef) theObject).Description,
+                    BattleTechResourceType.HeatSinkDef => ((HeatSinkDef) theObject).Description,
+                    BattleTechResourceType.JumpJetDef => ((JumpJetDef) theObject).Description,
+                    BattleTechResourceType.WeaponDef => ((WeaponDef) theObject).Description,
+                    BattleTechResourceType.MechDef => ((MechDef) theObject).Description,
+                    _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
+                };
+            }
+
+            Logger.Debug($"Parsing backup canon availability data...");
+            var mechAppearanceData = MechModel.ProcessAvailabilityFile(Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), Settings.MechAppearanceFile));
+
             foreach (var storeResourceType in ProcGenStoreService.StoreItemsByType.Keys)
             {
                 ProcGenStoreService.Logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
-                var rawItemsList = StoreResourceTypesDictionary[storeResourceType];
-                Logger.Debug($"First Test Item = {GetDynamicObjectByType(storeResourceType, rawItemsList.First()).ToJSON()}...");
-                var rawItemsListSansTemplates = rawItemsList.Where(theObject => !GetDynamicObjectByType(storeResourceType, theObject).Description.Id.ToLower().Contains("template")).ToList();
+                var rawItemsList = GetObjectListByType(storeResourceType, simGame);
+                var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
+                        !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
+                    .ToList();
                 ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(rawItemsListSansTemplates.Select(
                     o =>
                     {
-                        string id = o.Description.Id;
-                        int definedRarity = o.Description.Rarity;
+                        var description = GetObjectDescriptionByType(storeResourceType, o);
+                        string id = description.Id;
+                        float definedRarity = description.Rarity;
                         var mappedRarity =
                             rarityMap.First(tuple => definedRarity < tuple.max && definedRarity >= tuple.min);
                         var tagSet = GetTagsByType(storeResourceType, o);
@@ -145,13 +137,27 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct()
                             .ToList();
 
+                        DateTime? appearanceDate = null;
+                        if (o is MechDef mechDef)
+                        {
+                            var mechModelEntry = mechAppearanceData.FirstOrDefault(model =>
+                                model.Name.Trim('"') == mechDef.Description.UIName);
+                            if (mechModelEntry != null)
+                            {
+                                appearanceDate = new DateTime(mechModelEntry.Year, 1, 1);
+                            }
+
+                            appearanceDate = mechDef.MinAppearanceDate ?? appearanceDate;
+                        }
+
                         ProcGenStoreService.Logger.Trace(
-                            $"Adding [{storeResourceType.ToString()}] - [{o.Description.Id}]|" +
-                            $"definedRarity = [{definedRarity.ToString()}, mappedRarity = [{mappedRarity.bracket}]]|" +
+                            $"Adding [{storeResourceType.ToString()}] - [{description.Id}]|" +
+                            $"minAppearanceDate = [{appearanceDate.ToString()}]|" +
+                            $"definedRarity = [{definedRarity.ToString(CultureInfo.InvariantCulture)}, mappedRarity = [{mappedRarity.bracket}]]|" +
                             $"tagSet = [{string.Join(",", tagSet)}]|" +
-                            $"requiredTags = [{string.Join("\r\n", requiredTags)}]|" +
-                            $"exclusionTags = [{string.Join("\r\n", exclusionTags)}].");
-                        return new ProcGenStoreItem(storeResourceType, o.Description.Id, tagSet,
+                            $"requiredTags = [{string.Join(", ", requiredTags)}]|" +
+                            $"exclusionTags = [{string.Join(", ", exclusionTags)}].");
+                        return new ProcGenStoreItem(storeResourceType, description.Id, appearanceDate, tagSet,
                             RarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
                             exclusionTags);
                     }
@@ -159,6 +165,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 ProcGenStoreService.Logger.Debug(
                     $"Added [{ProcGenStoreService.StoreItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
+            ProcGenStoreService.Logger.Debug(
+                $"Mechs without appearance dates = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
         }
     }
 }

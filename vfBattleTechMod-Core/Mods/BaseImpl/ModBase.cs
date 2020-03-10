@@ -5,6 +5,7 @@ using vfBattleTechMod_Core.Helpers;
 using vfBattleTechMod_Core.Mods.Interfaces;
 using vfBattleTechMod_Core.Utils;
 using vfBattleTechMod_Core.Utils.Interfaces;
+using vfBattleTechMod_Core.Utils.Loggers;
 
 namespace vfBattleTechMod_Core.Mods.BaseImpl
 {

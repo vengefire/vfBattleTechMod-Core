@@ -37,7 +37,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             ProcGenStoreContentFeature.Myself = this;
         }
 
-        protected StoreItemService StoreItemService { get; set; }
+        // protected StoreItemService StoreItemService { get; set; }
 
         public static List<IModPatchDirective> GetPatchDirectives =>
             new List<IModPatchDirective>
@@ -70,8 +70,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             {
                 try
                 {
-                    Myself._procGenStoreService = new ProcGenStoreService(Logger, Myself.Settings.RarityBrackets,
-                        BattleTechStoreResourceTypes);
+                    Myself._procGenStoreService = new ProcGenStoreService(Logger, Myself.Settings, BattleTechStoreResourceTypes);
                 }
                 catch (TypeLoadException ex)
                 {
@@ -108,15 +107,17 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
             var planetTagModifiers = ModFeatureBase<ProcGenStoreContentFeatureSettings>.Myself.Settings
                 .PlanetTagModifiers.Where(modifier => owningSystemTags.Contains(modifier.Tag)).ToList();
 
-            var storeItems = ProcGenStoreContentFeature.Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name,
-                currentDate, owningSystemTags, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
-            var shopDefItems = storeItems
+            var shopDefItems = new List<ShopDefItem>();
+            
+            /*
+             var storeItems = ProcGenStoreContentFeature.Myself.StoreItemService.GenerateItemsForStore(shopType, ___system.Name, owningFaction.Name, currentDate, owningSystemTags, planetTagModifiers, ProcGenStoreContentFeature.Myself.Settings);
+             shopDefItems = storeItems
                 .Where(item => simGameState.DataManager.ResourceLocator.EntryByID(item.Id, item.Type, true) != null)
                 .Select(item =>
                 {
                     return new ShopDefItem(item.Id, ProcGenStoreContentFeature.Myself.dictResourceTypeToShopitemType[item.Type], 0, item.Quantity,
                         item.Quantity == -1, false, 0);
-                }).ToList();
+                }).ToList();*/
 
             ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger.Debug($"ShopDefItems = [\r\n{JsonConvert.SerializeObject(shopDefItems, Formatting.Indented)}]");
 
@@ -154,8 +155,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
 
         public override void OnInitializeComplete()
         {
-            StoreItemService = new StoreItemService(Path.Combine(Directory, Settings.StoreItemSourceFile),
-                Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);
+            /*StoreItemService = new StoreItemService(Path.Combine(Directory, Settings.StoreItemSourceFile),
+                Settings.RarityBrackets, ProcGenStoreContentFeature.BattleTechStoreResourceTypes, ModFeatureBase<ProcGenStoreContentFeatureSettings>.Logger);*/
         }
     }
 }

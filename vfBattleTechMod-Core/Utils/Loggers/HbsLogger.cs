@@ -4,7 +4,7 @@ using HBS.Logging;
 using vfBattleTechMod_Core.Utils.Interfaces;
 using LogLevel = vfBattleTechMod_Core.Utils.Enums.LogLevel;
 
-namespace vfBattleTechMod_Core.Utils
+namespace vfBattleTechMod_Core.Utils.Loggers
 {
     public class HbsLogger : ILogger
     {

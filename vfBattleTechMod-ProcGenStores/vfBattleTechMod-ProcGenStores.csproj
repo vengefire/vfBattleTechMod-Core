@@ -43,9 +43,7 @@
     <Reference Include="EPPlus, Version=4.5.3.3, Culture=neutral, PublicKeyToken=ea159fdaa78159a1, processorArchitecture=MSIL">
       <HintPath>..\packages\EPPlus.4.5.3.3\lib\net40\EPPlus.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.CSharp">
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json, Version=6.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\BattleTech_Data\Managed\Newtonsoft.Json.dll</HintPath>
@@ -63,6 +61,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\MetaDataHelpers\MechModel.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItem.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreService.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItem.cs" />
@@ -93,6 +92,10 @@
     <None Include="Res\canon-tech-advancement.xlsx" />
     <None Include="Res\xlrp-store-content.xlsx" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Content Include="Res\BattleMech_Unit_Listing - canon.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -79,9 +79,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Enums\LogLevel.cs" />
     <Compile Include="Utils\Interfaces\ILogger.cs" />
-    <Compile Include="Utils\HbsLogger.cs" />
-    <Compile Include="Utils\log4NetLogger.cs" />
-    <Compile Include="Utils\NullLogger.cs" />
+    <Compile Include="Utils\Loggers\HbsLogger.cs" />
+    <Compile Include="Utils\Loggers\log4NetLogger.cs" />
+    <Compile Include="Utils\Loggers\NullLogger.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />

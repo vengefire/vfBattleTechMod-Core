@@ -1,6 +1,7 @@
 ﻿using NUnit.Framework;
 using vfBattleTechMod_Core.Helpers;
 using vfBattleTechMod_Core.Utils;
+using vfBattleTechMod_Core.Utils.Loggers;
 using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent;
 using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic;
 

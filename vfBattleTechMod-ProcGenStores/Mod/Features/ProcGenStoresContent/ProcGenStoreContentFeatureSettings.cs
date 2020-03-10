@@ -22,6 +22,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
         public List<PlanetTagModifier> PlanetTagModifiers { get; set; } =
             new List<PlanetTagModifier> {new PlanetTagModifier()};
 
+        public string MechAppearanceFile { get; set; } = "./res/BattleMech_Unit_Listing - canon.csv";
+
         public class BlackMarket
         {
             public bool CascadeRollsOnFail = true;
