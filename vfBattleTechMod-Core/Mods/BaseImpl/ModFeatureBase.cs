@@ -16,21 +16,21 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
         protected ModFeatureBase(List<IModPatchDirective> patchDirectives)
         {
             PatchDirectives = patchDirectives;
-            ModFeatureBase<TModFeatureSettings>.Myself = this;
+            Myself = this;
         }
 
         protected static ModFeatureBase<TModFeatureSettings> Myself
         {
-            get => ModFeatureBase<TModFeatureSettings>._myself;
+            get => _myself;
             set
             {
-                if (ModFeatureBase<TModFeatureSettings>._myself != null)
+                if (_myself != null)
                 {
                     throw new InvalidProgramException(
-                        $"Mod Feature [{ModFeatureBase<TModFeatureSettings>.Myself.Name}] has already been created. Only one may be instanced.");
+                        $"Mod Feature [{Myself.Name}] has already been created. Only one may be instanced.");
                 }
 
-                ModFeatureBase<TModFeatureSettings>._myself = value;
+                _myself = value;
             }
         }
 
@@ -53,7 +53,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             ILogger logger,
             string directory)
         {
-            ModFeatureBase<TModFeatureSettings>.Logger = logger;
+            Logger = logger;
             Directory = directory;
 
             Settings = settings == null
@@ -62,20 +62,20 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
             if (!Settings.Enabled)
             {
-                ModFeatureBase<TModFeatureSettings>.Logger.Debug(
+                Logger.Debug(
                     $"Feature [{Name}] has been disabled with settings [{JsonConvert.SerializeObject(Settings)}]");
                 return;
             }
 
             if (!ValidateSettings())
             {
-                ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Feature [{Name}] has been disabled due to settings validation failure.");
+                Logger.Debug($"Feature [{Name}] has been disabled due to settings validation failure.");
                 return;
             }
 
             ExecutePatchDirectives(harmonyInstance);
             OnInitializeComplete();
-            ModFeatureBase<TModFeatureSettings>.Logger.Debug($"Feature [{Name}] initialized with settings [{JsonConvert.SerializeObject(Settings)}]");
+            Logger.Debug($"Feature [{Name}] initialized with settings [{JsonConvert.SerializeObject(Settings)}]");
         }
 
         public abstract void OnInitializeComplete();
@@ -84,7 +84,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         private void ExecutePatchDirectives(HarmonyInstance harmonyInstance)
         {
-            PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, ModFeatureBase<TModFeatureSettings>.Logger));
+            PatchDirectives.ForEach(directive => directive.Initialize(harmonyInstance, Logger));
         }
     }
 }

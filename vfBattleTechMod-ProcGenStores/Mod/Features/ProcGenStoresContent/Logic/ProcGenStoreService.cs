@@ -36,6 +36,55 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             _logger.Debug($"Items loaded from data manager.");
         }
 
+        static TagSet GetTagsByType(BattleTechResourceType type, object theObject)
+        {
+            switch (type)
+            {
+                case BattleTechResourceType.AmmunitionBoxDef: return ((AmmunitionBoxDef) theObject).ComponentTags;
+                case BattleTechResourceType.UpgradeDef: return ((UpgradeDef) theObject).ComponentTags;
+                case BattleTechResourceType.HeatSinkDef: return ((HeatSinkDef) theObject).ComponentTags;
+                case BattleTechResourceType.JumpJetDef: return ((JumpJetDef) theObject).ComponentTags;
+                case BattleTechResourceType.WeaponDef: return ((WeaponDef) theObject).ComponentTags;
+                case BattleTechResourceType.MechDef: return ((MechDef) theObject).MechTags;
+                default:
+                    throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.");
+            }
+        }
+
+        static DescriptionDef GetObjectDescriptionByType(BattleTechResourceType type, object theObject)
+        {
+            return type switch
+            {
+                BattleTechResourceType.AmmunitionBoxDef => ((AmmunitionBoxDef) theObject).Description,
+                BattleTechResourceType.UpgradeDef => ((UpgradeDef) theObject).Description,
+                BattleTechResourceType.HeatSinkDef => ((HeatSinkDef) theObject).Description,
+                BattleTechResourceType.JumpJetDef => ((JumpJetDef) theObject).Description,
+                BattleTechResourceType.WeaponDef => ((WeaponDef) theObject).Description,
+                BattleTechResourceType.MechDef => ((MechDef) theObject).Description,
+                _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
+            };
+        }
+
+        static List<object> GetObjectListByType(BattleTechResourceType type, SimGameState simGame)
+        {
+            return type switch
+            {
+                BattleTechResourceType.AmmunitionBoxDef => simGame.DataManager.AmmoBoxDefs
+                    .Select(pair => (object) pair.Value).ToList(),
+                BattleTechResourceType.UpgradeDef => simGame.DataManager.UpgradeDefs.Select(pair => (object) pair.Value)
+                    .ToList(),
+                BattleTechResourceType.HeatSinkDef => simGame.DataManager.HeatSinkDefs
+                    .Select(pair => (object) pair.Value).ToList(),
+                BattleTechResourceType.JumpJetDef => simGame.DataManager.JumpJetDefs.Select(pair => (object) pair.Value)
+                    .ToList(),
+                BattleTechResourceType.WeaponDef => simGame.DataManager.WeaponDefs.Select(pair => (object) pair.Value)
+                    .ToList(),
+                BattleTechResourceType.MechDef => simGame.DataManager.MechDefs.Select(pair => (object) pair.Value)
+                    .ToList(),
+                _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
+            };
+        }
+
         public static ProcGenStoreContentFeatureSettings Settings { get; set; }
 
         private void LoadItemsFromDataManager()
@@ -54,49 +103,6 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             };
             rarityMap.Reverse();
 
-            static TagSet GetTagsByType(BattleTechResourceType type, object theObject)
-            {
-                switch (type)
-                {
-                    case BattleTechResourceType.AmmunitionBoxDef: return ((AmmunitionBoxDef) theObject).ComponentTags;
-                    case BattleTechResourceType.UpgradeDef: return ((UpgradeDef) theObject).ComponentTags;
-                    case BattleTechResourceType.HeatSinkDef: return ((HeatSinkDef) theObject).ComponentTags;
-                    case BattleTechResourceType.JumpJetDef: return ((JumpJetDef) theObject).ComponentTags;
-                    case BattleTechResourceType.WeaponDef: return ((WeaponDef) theObject).ComponentTags;
-                    case BattleTechResourceType.MechDef: return ((MechDef) theObject).MechTags;
-                    default:
-                        throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.");
-                }
-            }
-
-            static List<object> GetObjectListByType(BattleTechResourceType type, SimGameState simGame)
-            {
-                return type switch
-                {
-                    BattleTechResourceType.AmmunitionBoxDef => simGame.DataManager.AmmoBoxDefs.Select(pair => (object)pair.Value).ToList(),
-                    BattleTechResourceType.UpgradeDef => simGame.DataManager.UpgradeDefs.Select(pair => (object)pair.Value).ToList(),
-                    BattleTechResourceType.HeatSinkDef => simGame.DataManager.HeatSinkDefs.Select(pair => (object)pair.Value).ToList(),
-                    BattleTechResourceType.JumpJetDef => simGame.DataManager.JumpJetDefs.Select(pair => (object)pair.Value).ToList(),
-                    BattleTechResourceType.WeaponDef => simGame.DataManager.WeaponDefs.Select(pair => (object)pair.Value).ToList(),
-                    BattleTechResourceType.MechDef => simGame.DataManager.MechDefs.Select(pair => (object)pair.Value).ToList(),
-                    _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
-                };
-            }
-
-            static DescriptionDef GetObjectDescriptionByType(BattleTechResourceType type, object theObject)
-            {
-                return type switch
-                {
-                    BattleTechResourceType.AmmunitionBoxDef => ((AmmunitionBoxDef) theObject).Description,
-                    BattleTechResourceType.UpgradeDef => ((UpgradeDef) theObject).Description,
-                    BattleTechResourceType.HeatSinkDef => ((HeatSinkDef) theObject).Description,
-                    BattleTechResourceType.JumpJetDef => ((JumpJetDef) theObject).Description,
-                    BattleTechResourceType.WeaponDef => ((WeaponDef) theObject).Description,
-                    BattleTechResourceType.MechDef => ((MechDef) theObject).Description,
-                    _ => throw new InvalidProgramException($"BattleTechResourceType [{type.ToString()}] unhandled.")
-                };
-            }
-
             _logger.Debug($"Parsing backup canon availability data...");
             var mechAppearanceData = MechModel.ProcessAvailabilityFile(AvailabilityFilePath);
 
@@ -104,14 +110,17 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             {
                 ProcGenStoreService._logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
                 var rawItemsList = GetObjectListByType(storeResourceType, simGame);
-                var rawItemsListSansTemplates = rawItemsList.Where(theObject => !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template")).ToList();
+                var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
+                        !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
+                    .ToList();
                 ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(rawItemsListSansTemplates.Select(
                     o =>
                     {
                         var description = GetObjectDescriptionByType(storeResourceType, o);
                         string id = description.Id;
                         float definedRarity = description.Rarity;
-                        var mappedRarity = rarityMap.First(tuple => definedRarity < tuple.max && definedRarity >= tuple.min);
+                        var mappedRarity =
+                            rarityMap.First(tuple => definedRarity < tuple.max && definedRarity >= tuple.min);
                         var tagSet = GetTagsByType(storeResourceType, o);
 
                         var containingShopDefinitions = simGame.DataManager.Shops
@@ -121,8 +130,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                                 def.Specials.Select(item => item.ID).Contains(id))
                             .ToList();
 
-                        var requiredTags = containingShopDefinitions.SelectMany(def => def.RequirementTags).Distinct().ToList();
-                        var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct().ToList();
+                        var requiredTags = containingShopDefinitions.SelectMany(def => def.RequirementTags).Distinct()
+                            .ToList();
+                        var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct()
+                            .ToList();
 
                         DateTime? appearanceDate = null;
                         appearanceDate = GetAppearanceDate(o, mechAppearanceData);
@@ -134,23 +145,26 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                             $"tagSet = [{string.Join(",", tagSet)}]|" +
                             $"requiredTags = [{string.Join(", ", requiredTags)}]|" +
                             $"exclusionTags = [{string.Join(", ", exclusionTags)}].");
-                        
+
                         return new ProcGenStoreItem(storeResourceType, description.Id, appearanceDate, tagSet,
                             _rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
                             exclusionTags);
                     }
                 ).ToList());
-                
+
                 ProcGenStoreService._logger.Debug(
                     $"Added [{ProcGenStoreService.StoreItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
-            
+
             ProcGenStoreService._logger.Debug(
                 $"Mechs without appearance dates = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
         }
 
         private static string AvailabilityFilePath =>
-            Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ?? throw new InvalidProgramException($"Executing Assembly Location cannot be null."), Settings.MechAppearanceFile);
+            Path.Combine(
+                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
+                throw new InvalidProgramException($"Executing Assembly Location cannot be null."),
+                Settings.MechAppearanceFile);
 
         private static DateTime? GetAppearanceDate(object o, List<MechModel> mechAppearanceData)
         {

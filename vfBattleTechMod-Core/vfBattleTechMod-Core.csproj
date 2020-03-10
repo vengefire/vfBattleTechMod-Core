@@ -66,6 +66,8 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Helpers\JsonHelpers.cs" />
     <Compile Include="Mods\BaseImpl\ModSettingsBase.cs" />
+    <Compile Include="Mods\CoreMod.cs" />
+    <Compile Include="Mods\CoreModSettings.cs" />
     <Compile Include="Mods\Interfaces\IModPatchDirective.cs" />
     <Compile Include="Mods\BaseImpl\ModBase.cs" />
     <Compile Include="Mods\BaseImpl\ModFeatureBase.cs" />
@@ -76,6 +78,7 @@
     <Compile Include="Mods\Interfaces\IModFeatureSettings.cs" />
     <Compile Include="Mods\Interfaces\IModSettings.cs" />
     <Compile Include="Mods\Interfaces\IModSettingsBase.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utils\Enums\LogLevel.cs" />
     <Compile Include="Utils\Interfaces\ILogger.cs" />
@@ -85,7 +88,13 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="log4net.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="res" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

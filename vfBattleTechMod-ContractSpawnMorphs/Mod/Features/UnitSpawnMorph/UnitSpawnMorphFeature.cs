@@ -67,7 +67,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
             // var prefabVariantsOccuringOnce = unitsGroupedByPrefab.Where(arg => arg.Units.Count() == 1).SelectMany(arg => arg.Units).ToList();
             foreach (var prefabGroup in unitsGroupedByPrefab)
             {
-                Logger.Trace($"Processing units for prefab [{prefabGroup.Base}]...");
+                Logger.Debug($"Processing units for prefab [{prefabGroup.Base}]...");
                 var prefabSelectionList = new List<UnitDef_MDD>();
                 foreach (var unit in prefabGroup.Units)
                 {
@@ -86,7 +86,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                         rarityWeighting = Math.Min(rawRarity, UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting);
                         if (rarityWeighting <= 0)
                         {
-                            Logger.Debug($"Rarity negative for [{unit.unitDefMdd.UnitDefID}], fixing to 1...");
+                            Logger.Trace($"Rarity negative for [{unit.unitDefMdd.UnitDefID}], fixing to 1...");
                             rarityWeighting = 1;
                         }
                         Logger.Trace($"Raw Days = [{rawDays}], " +
@@ -116,7 +116,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                 Logger.Trace($"Shuffling prefab selection list...");
                 prefabSelectionList.Shuffle();
                 var selectedPrefabVariant = prefabSelectionList[0];
-                Logger.Trace($"Selected [{selectedPrefabVariant.UnitDefID} for inclusion in final filtered list...]");
+                Logger.Debug($"Selected [{selectedPrefabVariant.UnitDefID} for inclusion in final filtered list...]");
                 filteredList.Add(selectedPrefabVariant);
             }
 
