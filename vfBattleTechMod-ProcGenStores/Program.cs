@@ -10,7 +10,7 @@ namespace vfBattleTechMod_ProcGenStores
         public static void Init(string directory, string settings)
         {
             var harmonyInstance = HarmonyInstance.Create(@"vengefire.procgenstores");
-            Program.ProcGenStoresMod = new ProcGenStoresMod(harmonyInstance, directory, settings, nameof(Program.ProcGenStoresMod));
+            ProcGenStoresMod = new ProcGenStoresMod(harmonyInstance, directory, settings, nameof(ProcGenStoresMod));
         }
     }
 }

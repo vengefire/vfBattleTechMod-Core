@@ -63,7 +63,7 @@
   <ItemGroup>
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\MetaDataHelpers\MechModel.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItem.cs" />
-    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreService.cs" />
+    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItemLoader.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItem.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemLoader.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItemService.cs" />

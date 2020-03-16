@@ -12,6 +12,8 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         private readonly ILogger _logger;
 
         private readonly List<ProcGenStoreContentFeatureSettings.RarityBracket> _rarityBrackets;
+        private readonly List<BattleTechResourceType> _storeResourceTypes;
+        private Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> _storeItems;
 
         public StoreItemService(string storeItemSourceFilePath,
             List<ProcGenStoreContentFeatureSettings.RarityBracket> rarityBrackets,
@@ -19,13 +21,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         {
             _logger = logger;
             _rarityBrackets = rarityBrackets;
-            StoreItems = StoreItemLoader.LoadStoreItemsFromExcel(storeItemSourceFilePath, rarityBrackets,
-                storeResourceTypes, logger);
+            _storeResourceTypes = storeResourceTypes;
         }
 
-        private List<StoreItem> StoreItems { get; }
-
-        public List<StoreItem> GenerateItemsForStore(Shop.ShopType shopType, string starSystemName, string ownerName,
+        public List<ProcGenStoreItem> GenerateItemsForStore(Shop.ShopType shopType, string starSystemName, string ownerName,
             DateTime currentDate, List<string> planetTags, List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers,
             ProcGenStoreContentFeatureSettings settings)
         {
@@ -41,10 +40,10 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             return storeInventory;
         }
 
-        private List<StoreItem> ProduceStoreInventoryFromPotentialItemList(Shop.ShopType shopType, string ownerName,
+        private List<ProcGenStoreItem> ProduceStoreInventoryFromPotentialItemList(Shop.ShopType shopType, string ownerName,
             DateTime currentDate, ProcGenStoreContentFeatureSettings settings,
             List<ProcGenStoreContentFeatureSettings.PlanetTagModifier> planetTagModifiers,
-            List<(StoreItem StoreItem, int BracketBonus)> potentialInventoryItems)
+            List<(ProcGenStoreItem StoreItem, int BracketBonus)> potentialInventoryItems)
         {
             _logger.Debug("Rolling for inventory stock...");
             
@@ -66,7 +65,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 _logger.Debug($"Trimmed black market potential inventory to [{potentialInventoryItems.Count} items] by rarity [{settings.BlackMarketSettings.BlackMarketMinBaseRarity}] - [{settings.BlackMarketSettings.BlackMarketMaxBaseRarity}]...");
             }
 
-            var inventoryItems = new List<StoreItem>();
+            var inventoryItems = new List<ProcGenStoreItem>();
             var random = new Random();
             var cascadeRollOrder =
                 _rarityBrackets.FirstOrDefault(bracket => bracket.Name == maxCascadeBracket)
@@ -156,17 +155,22 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             return inventoryItems;
         }
 
-        public List<(StoreItem StoreItem, int BracketBonus)> IdentifyPotentialInventoryItems(Shop.ShopType shopType,
+        public List<(ProcGenStoreItem StoreItem, int BracketBonus)> IdentifyPotentialInventoryItems(Shop.ShopType shopType,
             string ownerName,
             List<string> planetTags,
             DateTime currentDate, ProcGenStoreContentFeatureSettings settings)
         {
-            var potentialInventoryItems = new List<(StoreItem StoreItem, int BracketBonus)>();
+            if (_storeItems == null)
+            {
+                _storeItems = ProcGenStoreItemLoader.LoadItemsFromDataManager(_logger, settings, _storeResourceTypes);
+            }
+            
+            var potentialInventoryItems = new List<(ProcGenStoreItem StoreItem, int BracketBonus)>();
             switch (shopType)
             {
                 case Shop.ShopType.System:
                 case Shop.ShopType.BlackMarket:
-                    StoreItems.ForEach(
+                    _storeItems.Values.SelectMany(list => list).ToList().ForEach(
                         item =>
                         {
                             var result = item.IsValidForAppearance(currentDate, ownerName, shopType, planetTags, settings);

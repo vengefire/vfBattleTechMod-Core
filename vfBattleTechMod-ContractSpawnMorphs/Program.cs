@@ -10,7 +10,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs
         public static void Init(string directory, string settings)
         {
             var harmonyInstance = HarmonyInstance.Create(@"vengefire.contract-spawn-morphs");
-            Program.ContractSpawnMorphMod = new ContractSpawnMorphMod(harmonyInstance, directory, settings, nameof(Program.ContractSpawnMorphMod));
+            ContractSpawnMorphMod = new ContractSpawnMorphMod(harmonyInstance, directory, settings, nameof(ContractSpawnMorphMod));
         }
     }
 }

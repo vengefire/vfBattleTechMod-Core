@@ -9,7 +9,7 @@ namespace vfBattleTechMod_Core
         public static void Init(string directory, string settings)
         {
             var harmonyInstance = HarmonyInstance.Create(@"vengefire.core");
-            Program.CoreMod = new CoreMod(harmonyInstance, directory, settings, nameof(Program.CoreMod));
+            CoreMod = new CoreMod(harmonyInstance, directory, settings, nameof(CoreMod));
         }
     }
 }

@@ -9,7 +9,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod
     public class ContractSpawnMorphMod : ModBase<ContractSpawnMorphModSettings>
     {
         public ContractSpawnMorphMod(HarmonyInstance harmonyInstance, string directory, string settings, string name)
-            : base(harmonyInstance, directory, settings, name, ContractSpawnMorphMod.AddModFeatures())
+            : base(harmonyInstance, directory, settings, name, AddModFeatures())
         {
         }
 

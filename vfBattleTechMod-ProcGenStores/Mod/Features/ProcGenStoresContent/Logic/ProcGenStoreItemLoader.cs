@@ -11,31 +11,8 @@ using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.Meta
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
-    public class ProcGenStoreService
+    public static class ProcGenStoreItemLoader
     {
-        private static List<ProcGenStoreContentFeatureSettings.RarityBracket> _rarityBrackets;
-
-        private static readonly Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> StoreItemsByType
-            = new Dictionary<BattleTechResourceType, List<ProcGenStoreItem>>();
-
-        private static ILogger _logger;
-
-        public ProcGenStoreService(ILogger logger,
-            ProcGenStoreContentFeatureSettings settings,
-            List<BattleTechResourceType> storeResourceTypes
-        )
-        {
-            ProcGenStoreService._logger = logger;
-            ProcGenStoreService.Settings = settings;
-            ProcGenStoreService._rarityBrackets = settings.RarityBrackets;
-
-            storeResourceTypes.ForEach(type => StoreItemsByType[type] = new List<ProcGenStoreItem>());
-
-            logger.Debug($"Loading items from data manager...");
-            LoadItemsFromDataManager();
-            _logger.Debug($"Items loaded from data manager.");
-        }
-
         static TagSet GetTagsByType(BattleTechResourceType type, object theObject)
         {
             switch (type)
@@ -85,12 +62,13 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             };
         }
 
-        public static ProcGenStoreContentFeatureSettings Settings { get; set; }
-
-        private void LoadItemsFromDataManager()
+        public static Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> LoadItemsFromDataManager(ILogger logger, ProcGenStoreContentFeatureSettings settings, List<BattleTechResourceType> storeResourceTypes)
         {
-            ProcGenStoreService._logger.Debug($"Building items lists from Data Manager...");
+            logger.Debug($"Building items lists from Data Manager...");
             var simGame = UnityGameInstance.BattleTechGame.Simulation;
+            var rarityBrackets = settings.RarityBrackets;
+            var storeItemsByType = new Dictionary<BattleTechResourceType, List<ProcGenStoreItem>>();
+            storeResourceTypes.ForEach(type => storeItemsByType[type] = new List<ProcGenStoreItem>());
             var rarityMap = new List<(int min, int max, string bracket)>
             {
                 (0, 1, "Common"),
@@ -103,12 +81,12 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             };
             rarityMap.Reverse();
 
-            _logger.Debug($"Parsing backup canon availability data...");
-            var mechAppearanceData = MechModel.ProcessAvailabilityFile(AvailabilityFilePath);
+            logger.Debug($"Parsing backup canon availability data...");
+            var mechAppearanceData = MechModel.ProcessAvailabilityFile(AvailabilityFilePath(settings.MechAppearanceFile));
 
-            foreach (var storeResourceType in ProcGenStoreService.StoreItemsByType.Keys)
+            foreach (var storeResourceType in storeItemsByType.Keys)
             {
-                ProcGenStoreService._logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
+                logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
                 var rawItemsList = GetObjectListByType(storeResourceType, simGame);
                 var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
                         !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
@@ -135,10 +113,14 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         var exclusionTags = containingShopDefinitions.SelectMany(def => def.ExclusionTags).Distinct()
                             .ToList();
 
+                        var invalid_tags = new List<string>() {"debug"};
+                        requiredTags.RemoveAll(s => invalid_tags.Contains(s));
+                        exclusionTags.RemoveAll(s => invalid_tags.Contains(s));
+
                         DateTime? appearanceDate = null;
                         appearanceDate = GetAppearanceDate(o, mechAppearanceData);
 
-                        ProcGenStoreService._logger.Trace(
+                        logger.Trace(
                             $"Adding [{storeResourceType.ToString()}] - [{description.Id}]|" +
                             $"minAppearanceDate = [{appearanceDate.ToString()}]|" +
                             $"definedRarity = [{definedRarity.ToString(CultureInfo.InvariantCulture)}, mappedRarity = [{mappedRarity.bracket}]]|" +
@@ -147,26 +129,28 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                             $"exclusionTags = [{string.Join(", ", exclusionTags)}].");
 
                         return new ProcGenStoreItem(storeResourceType, description.Id, appearanceDate, tagSet,
-                            _rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
+                            rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
                             exclusionTags);
                     }
                 ).ToList();
-                ProcGenStoreService.StoreItemsByType[storeResourceType].AddRange(itemDetails);
+                storeItemsByType[storeResourceType].AddRange(itemDetails);
 
-                ProcGenStoreService._logger.Debug(
-                    $"Added [{ProcGenStoreService.StoreItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
+                logger.Debug(
+                    $"Added [{storeItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
 
-            ProcGenStoreService._logger.Debug(
-                $"Mechs without appearance dates (and therefore removed) = [\r\n{string.Join("\r\n", StoreItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
-            StoreItemsByType[BattleTechResourceType.MechDef].RemoveAll(item => !item.MinAppearanceDate.HasValue);
+            logger.Debug(
+                $"Mechs without appearance dates (and therefore removed) = [\r\n{string.Join("\r\n", storeItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
+            storeItemsByType[BattleTechResourceType.MechDef].RemoveAll(item => !item.MinAppearanceDate.HasValue);
+
+            return storeItemsByType;
         }
 
-        private static string AvailabilityFilePath =>
+        private static string AvailabilityFilePath(string mechAppearanceFile) =>
             Path.Combine(
                 Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
                 throw new InvalidProgramException($"Executing Assembly Location cannot be null."),
-                Settings.MechAppearanceFile);
+                mechAppearanceFile);
 
         private static DateTime? GetAppearanceDate(object o, List<MechModel> mechAppearanceData)
         {

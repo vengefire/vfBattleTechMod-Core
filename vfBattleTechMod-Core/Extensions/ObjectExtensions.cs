@@ -22,7 +22,7 @@ namespace vfBattleTechMod_Core.Extensions
 
         public static object Copy(this object originalObject)
         {
-            return ObjectExtensions.InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
+            return InternalCopy(originalObject, new Dictionary<object, object>(new ReferenceEqualityComparer()));
         }
 
         private static object InternalCopy(object originalObject, IDictionary<object, object> visited)
@@ -48,7 +48,7 @@ namespace vfBattleTechMod_Core.Extensions
                 return null;
             }
 
-            var cloneObject = ObjectExtensions.CloneMethod.Invoke(originalObject, null);
+            var cloneObject = CloneMethod.Invoke(originalObject, null);
             if (typeToReflect.IsArray)
             {
                 var arrayType = typeToReflect.GetElementType();
@@ -56,13 +56,13 @@ namespace vfBattleTechMod_Core.Extensions
                 {
                     var clonedArray = (Array) cloneObject;
                     clonedArray.ForEach((array, indices) =>
-                        array.SetValue(ObjectExtensions.InternalCopy(clonedArray.GetValue(indices), visited), indices));
+                        array.SetValue(InternalCopy(clonedArray.GetValue(indices), visited), indices));
                 }
             }
 
             visited.Add(originalObject, cloneObject);
-            ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect);
-            ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
+            CopyFields(originalObject, visited, cloneObject, typeToReflect);
+            RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect);
             return cloneObject;
         }
 
@@ -71,8 +71,8 @@ namespace vfBattleTechMod_Core.Extensions
         {
             if (typeToReflect.BaseType != null)
             {
-                ObjectExtensions.RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
-                ObjectExtensions.CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType,
+                RecursiveCopyBaseTypePrivateFields(originalObject, visited, cloneObject, typeToReflect.BaseType);
+                CopyFields(originalObject, visited, cloneObject, typeToReflect.BaseType,
                     BindingFlags.Instance | BindingFlags.NonPublic, info => info.IsPrivate);
             }
         }
@@ -95,7 +95,7 @@ namespace vfBattleTechMod_Core.Extensions
                 }
 
                 var originalFieldValue = fieldInfo.GetValue(originalObject);
-                var clonedFieldValue = ObjectExtensions.InternalCopy(originalFieldValue, visited);
+                var clonedFieldValue = InternalCopy(originalFieldValue, visited);
                 fieldInfo.SetValue(cloneObject, clonedFieldValue);
             }
         }

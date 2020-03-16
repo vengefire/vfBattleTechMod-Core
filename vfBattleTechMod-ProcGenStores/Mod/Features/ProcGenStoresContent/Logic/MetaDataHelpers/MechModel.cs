@@ -82,7 +82,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.
                         continue;
                     }
 
-                    var mech = MechModel.FromCsv(line);
+                    var mech = FromCsv(line);
                     mechList.Add(mech);
                 }
             }

@@ -13,9 +13,9 @@ namespace vfBattleTechMod_Template.Mod.Features.Template
         private new static TemplateFeature Myself;
 
         public TemplateFeature()
-            : base(TemplateFeature.GetPatchDirectives)
+            : base(GetPatchDirectives)
         {
-            TemplateFeature.Myself = this;
+            Myself = this;
         }
 
         public static List<IModPatchDirective> GetPatchDirectives =>

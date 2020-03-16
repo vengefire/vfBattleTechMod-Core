@@ -30,6 +30,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
         public List<string> RestrictedTags { get; set; }
         public DateTime? MinAppearanceDate { get; set; }
+        public int Quantity { get; set; }
 
         public (bool result, int bracketBonus) IsValidForAppearance(DateTime currentDate, string ownerValueName,
             Shop.ShopType shopType,

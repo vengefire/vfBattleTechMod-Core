@@ -14,9 +14,9 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
         private new static UnitSpawnMorphFeature Myself;
 
         public UnitSpawnMorphFeature()
-            : base(UnitSpawnMorphFeature.GetPatchDirectives)
+            : base(GetPatchDirectives)
         {
-            UnitSpawnMorphFeature.Myself = this;
+            Myself = this;
         }
 
         public static List<IModPatchDirective> GetPatchDirectives =>
@@ -34,7 +34,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
 
         public static void TagSetQueryExtensions_GetMatchingUnitDefs_Postfix(MetadataDatabase __instance, TagSet requiredTags, DateTime? currentDate, ref List<UnitDef_MDD> __result)
         {
-            Logger.Debug($"Executing [{nameof(UnitSpawnMorphFeature.TagSetQueryExtensions_GetMatchingUnitDefs_Postfix)}],\r\n" +
+            Logger.Debug($"Executing [{nameof(TagSetQueryExtensions_GetMatchingUnitDefs_Postfix)}],\r\n" +
                          $"RequiredTags = [{string.Join(", ", requiredTags)}]\r\n" +
                          $"MatchingDataByTagSet = [{string.Join("\r\n", __result.Select(defMdd => defMdd.UnitDefID))}]...");
             
@@ -59,7 +59,8 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
             // Group matching unitDef_MDD records by their associated prefabIdentifier
             var unitsGroupedByPrefab = matchingDataByTagSet
                 .Select(defMdd => new {unitDefMdd = defMdd, mechDef = simGameState.DataManager.MechDefs.First(pair => pair.Key == defMdd.UnitDefID).Value})
-                .GroupBy(arg => arg.mechDef.Chassis.PrefabIdentifier, arg => arg, (s, enumerable) => new {Base = s, Units = enumerable}).ToList();
+                .GroupBy(arg => arg.mechDef.Chassis.PrefabIdentifier, arg => arg, (s, enumerable) => new {Base = s, Units = enumerable})
+                .ToList();
             
             Logger.Debug($"Grouped result list into [\r\n" +
                          $"{string.Join("\r\n", unitsGroupedByPrefab.Select(arg => $"[{arg.Base}] -> {string.Join(", ", arg.Units.Select(arg1 => arg1.unitDefMdd.UnitDefID))}"))}]");
@@ -76,14 +77,14 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                     // 1. Each entry gets a rarityWeighting + 1 per 30 days since appearance date has passed
                     // 2. To a maximum of 6 (so mechs that appeared at least 180 days prior to the current date receive the maximum rarity weighting)
                     // These following two variables ought to be set via [Settings] in the mod.json...
-                    var rarityWeighting = UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting;
+                    var rarityWeighting = Myself.Settings.MaxRarityWeighting;
                     if (currentDate != null && unit.mechDef.MinAppearanceDate != null)
                     {
                         // Could do this in only one statement, but that ended up being a little kludgy and hard to read...
                         var rawDays = (currentDate - unit.mechDef.MinAppearanceDate).Value.TotalDays + 1;
-                        var roundedDays = Math.Round(rawDays / UnitSpawnMorphFeature.Myself.Settings.RarityWeightingDaysDivisor, 0);
+                        var roundedDays = Math.Round(rawDays / Myself.Settings.RarityWeightingDaysDivisor, 0);
                         var rawRarity = Convert.ToInt32(roundedDays);
-                        rarityWeighting = Math.Min(rawRarity, UnitSpawnMorphFeature.Myself.Settings.MaxRarityWeighting);
+                        rarityWeighting = Math.Min(rawRarity, Myself.Settings.MaxRarityWeighting);
                         if (rarityWeighting <= 0)
                         {
                             Logger.Trace($"Rarity negative for [{unit.unitDefMdd.UnitDefID}], fixing to 1...");
