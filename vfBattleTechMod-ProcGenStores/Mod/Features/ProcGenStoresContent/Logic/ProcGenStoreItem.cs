@@ -56,7 +56,11 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 return (false, 0);
             }
 
-            // No valid periods or matching owners...
+            if (MinAppearanceDate.HasValue && MinAppearanceDate > currentDate)
+            {
+                return (false, 0);
+            }
+
             return (true, 0);
         }
     }

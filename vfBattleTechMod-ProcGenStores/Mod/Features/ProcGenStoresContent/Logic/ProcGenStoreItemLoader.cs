@@ -103,6 +103,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         return true;
                     })
                     .ToList();
+                
                 var itemDetails = rawItemsListSansTemplates.Select(
                     o =>
                     {
