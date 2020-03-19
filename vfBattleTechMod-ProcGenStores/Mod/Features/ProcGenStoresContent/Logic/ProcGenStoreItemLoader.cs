@@ -62,7 +62,9 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             };
         }
 
-        public static Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> LoadItemsFromDataManager(ILogger logger, ProcGenStoreContentFeatureSettings settings, List<BattleTechResourceType> storeResourceTypes)
+        public static Dictionary<BattleTechResourceType, List<ProcGenStoreItem>> LoadItemsFromDataManager(
+            ILogger logger, ProcGenStoreContentFeatureSettings settings,
+            List<BattleTechResourceType> storeResourceTypes)
         {
             logger.Debug($"Building items lists from Data Manager...");
             var simGame = UnityGameInstance.BattleTechGame.Simulation;
@@ -82,14 +84,24 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             rarityMap.Reverse();
 
             logger.Debug($"Parsing backup canon availability data...");
-            var mechAppearanceData = MechModel.ProcessAvailabilityFile(AvailabilityFilePath(settings.MechAppearanceFile));
+            var mechAppearanceData =
+                MechModel.ProcessAvailabilityFile(AvailabilityFilePath(settings.MechAppearanceFile));
 
             foreach (var storeResourceType in storeItemsByType.Keys)
             {
                 logger.Debug($"Building object lists for [{storeResourceType.ToString()}]...");
                 var rawItemsList = GetObjectListByType(storeResourceType, simGame);
                 var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
-                        !GetObjectDescriptionByType(storeResourceType, theObject).Id.ToLower().Contains("template"))
+                    {
+                        var description = GetObjectDescriptionByType(storeResourceType, theObject);
+                        if (description.Id.ToLower().Contains("template") || !description.Purchasable)
+                        {
+                            logger.Trace($"Filtering out [{description.Id}], Purchasable = [{description.Purchasable}].");
+                            return false;
+                        }
+                        // Filter out templates and items flagged as non-purchasable...
+                        return true;
+                    })
                     .ToList();
                 var itemDetails = rawItemsListSansTemplates.Select(
                     o =>

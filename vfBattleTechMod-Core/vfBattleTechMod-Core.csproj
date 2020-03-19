@@ -64,6 +64,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Extensions\ObjectExtensions.cs" />
+    <Compile Include="Helpers\AppearanceUtils.cs" />
     <Compile Include="Helpers\JsonHelpers.cs" />
     <Compile Include="Mods\BaseImpl\ModSettingsBase.cs" />
     <Compile Include="Mods\CoreMod.cs" />
