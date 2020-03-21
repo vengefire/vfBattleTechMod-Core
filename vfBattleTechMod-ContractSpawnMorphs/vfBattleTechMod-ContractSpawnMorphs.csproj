@@ -47,6 +47,8 @@
         <Reference Include="System.Xml" />
     </ItemGroup>
     <ItemGroup>
+        <Compile Include="Mod\Features\UnitAppearanceDateMorphs\UnitAppearanceDateMorphFeature.cs" />
+        <Compile Include="Mod\Features\UnitAppearanceDateMorphs\UnitAppearanceDateMorphFeatureSettings.cs" />
         <Compile Include="Mod\Features\UnitSpawnMorph\UnitSpawnMorphFeature.cs" />
         <Compile Include="Mod\Features\UnitSpawnMorph\UnitSpawnMorphFeatureSettings.cs" />
         <Compile Include="Mod\ContractSpawnMorphsMod.cs" />

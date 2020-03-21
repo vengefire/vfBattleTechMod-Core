@@ -1,9 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 
-namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.MetaDataHelpers
+namespace vfBattleTechMod_Core.Utils.MetaDataHelpers
 {
     public class MechModel
     {

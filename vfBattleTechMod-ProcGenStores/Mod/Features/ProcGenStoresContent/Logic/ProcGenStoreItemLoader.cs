@@ -6,8 +6,11 @@ using System.Linq;
 using System.Reflection;
 using BattleTech;
 using HBS.Collections;
+using OfficeOpenXml;
+using UIWidgets;
+using vfBattleTechMod_Core.Mods;
 using vfBattleTechMod_Core.Utils.Interfaces;
-using vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic.MetaDataHelpers;
+using vfBattleTechMod_Core.Utils.MetaDataHelpers;
 
 namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 {
@@ -84,8 +87,6 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
             rarityMap.Reverse();
 
             logger.Debug($"Parsing backup canon availability data...");
-            var mechAppearanceData =
-                MechModel.ProcessAvailabilityFile(AvailabilityFilePath(settings.MechAppearanceFile));
 
             foreach (var storeResourceType in storeItemsByType.Keys)
             {
@@ -94,7 +95,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 var rawItemsListSansTemplates = rawItemsList.Where(theObject =>
                     {
                         var description = GetObjectDescriptionByType(storeResourceType, theObject);
-                        if (description.Id.ToLower().Contains("template") || !description.Purchasable)
+                        if (description.Id.ToLower().Contains("template"))
                         {
                             logger.Trace($"Filtering out [{description.Id}], Purchasable = [{description.Purchasable}].");
                             return false;
@@ -131,7 +132,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                         exclusionTags.RemoveAll(s => invalid_tags.Contains(s));
 
                         DateTime? appearanceDate = null;
-                        appearanceDate = GetAppearanceDate(o, mechAppearanceData);
+                        appearanceDate = GetAppearanceDate(o, CoreMod.CoreModSingleton.MechAppearanceData, simGame.DataManager.MechDefs.Select(pair => pair.Value).ToList(), logger);
 
                         logger.Trace(
                             $"Adding [{storeResourceType.ToString()}] - [{description.Id}]|" +
@@ -143,7 +144,7 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
 
                         return new ProcGenStoreItem(storeResourceType, description.Id, appearanceDate, tagSet,
                             rarityBrackets.First(bracket => bracket.Name == mappedRarity.bracket), requiredTags,
-                            exclusionTags);
+                            exclusionTags, description.Purchasable);
                     }
                 ).ToList();
                 storeItemsByType[storeResourceType].AddRange(itemDetails);
@@ -152,20 +153,61 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                     $"Added [{storeItemsByType[storeResourceType].Count.ToString()} items to list [{storeResourceType.ToString()}]].");
             }
 
+            var mechsSansAppearanceDates = storeItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).ToList();
             logger.Debug(
-                $"Mechs without appearance dates (and therefore removed) = [\r\n{string.Join("\r\n", storeItemsByType[BattleTechResourceType.MechDef].Where(item => !item.MinAppearanceDate.HasValue).Select(item => item.Id))}]");
+                $"Mechs without appearance dates (and therefore removed) = [\r\n{string.Join("\r\n", mechsSansAppearanceDates.Select(item => item.Id))}]");
             storeItemsByType[BattleTechResourceType.MechDef].RemoveAll(item => !item.MinAppearanceDate.HasValue);
+
+            try
+            {
+                void DumpItemsToSheet(ExcelWorkbook excelWorkbook, string sheetName, List<string> list, List<ProcGenStoreItem> items)
+                {
+                    var row = 2;
+                    var col = 1;
+                    var sheet = excelWorkbook.Worksheets.Add(sheetName);
+                    list.ForEach(s => sheet.Cells[1, col++].Value = s);
+                    items.ForEach(item =>
+                    {
+                        sheet.Cells[row, 1].Value = item.Id;
+                        sheet.Cells[row, 2].Value = item.Purchasable;
+                        sheet.Cells[row, 3].Value = item.MinAppearanceDate.ToString();
+                        row += 1;
+                    });
+                }
+
+                var fileInfo = new FileInfo(Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "DataManagerItems.xlsx"));
+                if (fileInfo.Exists)
+                {
+                    fileInfo.Delete();
+                }
+                
+                var excelPackage = new ExcelPackage(fileInfo);
+                var book = excelPackage.Workbook;
+                var columns = new List<string>()
+                {
+                    "Id", "Purchasable", "Appearance Date"
+                };
+                
+                storeItemsByType.Keys.ForEach(type =>
+                {
+                    var items = storeItemsByType[type];
+                    var sheetName = type.ToString();
+                    DumpItemsToSheet(book, sheetName, columns, items);
+                });
+                
+                DumpItemsToSheet(book, "Mechs w/o date", columns, mechsSansAppearanceDates);
+                excelPackage.Save();
+            }
+            catch (Exception ex)
+            {
+                logger.Error($"Exception logging data manager items.", ex);
+            }
 
             return storeItemsByType;
         }
 
-        private static string AvailabilityFilePath(string mechAppearanceFile) =>
-            Path.Combine(
-                Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location) ??
-                throw new InvalidProgramException($"Executing Assembly Location cannot be null."),
-                mechAppearanceFile);
-
-        private static DateTime? GetAppearanceDate(object o, List<MechModel> mechAppearanceData)
+        private static DateTime? GetAppearanceDate(object o, List<MechModel> mechAppearanceData, List<MechDef> mechDefs,
+            ILogger logger)
         {
             DateTime? appearanceDate = null;
             if (o is MechDef mechDef)
@@ -178,6 +220,30 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
                 }
 
                 appearanceDate = mechDef.MinAppearanceDate ?? appearanceDate;
+            }
+            else
+            {
+                if (o is MechComponentDef component)
+                {
+                    var id = component.Description.Id;
+                    logger.Trace($"Attempting to mine first appearance of [{id}] on any mech...");
+                    var hostingMechs = mechDefs.Where(def =>
+                        {
+                            logger.Trace($"Evaluating mech [{def.Description.Id}]...");
+                            if (!def.MinAppearanceDate.HasValue)
+                            {
+                                logger.Trace($"Mech [{def.Description.Id}] has no appearance date, skipping...");
+                                return false;
+                            }
+                            return def.Inventory.Any(inventoryRef =>
+                            {
+                                return inventoryRef.ComponentDefID == id;
+                            });
+                        }).OrderBy(def => def.MinAppearanceDate);
+                    var earliestMech = hostingMechs.FirstOrDefault();
+                    appearanceDate = earliestMech?.MinAppearanceDate;
+                    logger.Trace($"Component [{id}] first appears [{appearanceDate.ToString()}] on mech [{earliestMech?.Description?.Id ?? "N/A"}].");
+                }
             }
 
             return appearanceDate;

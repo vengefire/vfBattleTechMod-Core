@@ -12,7 +12,7 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
             MethodInfo prefixMethodType,
             MethodInfo postfixMethodType,
             MethodInfo transpilerMethodType,
-            int priority)
+            int priority = Harmony.Priority.Normal)
         {
             TargetMethodType = targetMethodType;
             PrefixMethodType = prefixMethodType;
@@ -33,11 +33,17 @@ namespace vfBattleTechMod_Core.Mods.BaseImpl
 
         public void Initialize(HarmonyInstance harmonyInstance, ILogger logger)
         {
-            harmonyInstance.Patch(
+            var harmonyPrefix = PrefixMethodType == null ? null : new HarmonyMethod(PrefixMethodType);
+            var harmonyPostfix = PostfixMethodType == null ? null : new HarmonyMethod(PostfixMethodType);
+            var harmonyTranspiler = TranspilerMethodType == null ? null : new HarmonyMethod(TranspilerMethodType);
+            
+            var dynamicMethod = harmonyInstance.Patch(
                 TargetMethodType,
-                PrefixMethodType == null ? null : new HarmonyMethod(PrefixMethodType),
-                PostfixMethodType == null ? null : new HarmonyMethod(PostfixMethodType),
-                TranspilerMethodType == null ? null : new HarmonyMethod(TranspilerMethodType));
+                harmonyPrefix,
+                harmonyPostfix,
+                harmonyTranspiler);
+            
+            logger.Debug($"Patched [{TargetMethodType.Name}]. Add more details you lazy bastard...");
         }
 
         public static void JustDoNothing()

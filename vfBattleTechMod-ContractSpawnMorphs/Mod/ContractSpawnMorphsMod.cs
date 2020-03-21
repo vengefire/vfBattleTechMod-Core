@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Harmony;
+using vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitAppearanceDateMorphs;
 using vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
@@ -18,6 +19,7 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod
             return new List<IModFeature<IModFeatureSettings>>
             {
                 new UnitSpawnMorphFeature(),
+                new UnitAppearanceDateMorphFeature()
             };
         }
     }

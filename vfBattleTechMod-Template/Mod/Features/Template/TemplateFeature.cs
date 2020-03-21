@@ -26,7 +26,7 @@ namespace vfBattleTechMod_Template.Mod.Features.Template
                     typeof(TemplateFeature).GetMethod("MetadataDatabase_GetMatchingUnitDefs_Prefix"),
                     typeof(TemplateFeature).GetMethod("MetadataDatabase_GetMatchingUnitDefs_Postfix"),
                     null,
-                    0)
+                    Harmony.Priority.Normal)
             };
 
         public override string Name => "Template Mod Feature";

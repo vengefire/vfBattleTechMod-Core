@@ -66,6 +66,7 @@
     <Compile Include="Extensions\ObjectExtensions.cs" />
     <Compile Include="Helpers\AppearanceUtils.cs" />
     <Compile Include="Helpers\JsonHelpers.cs" />
+    <Compile Include="Helpers\ModHelpers.cs" />
     <Compile Include="Mods\BaseImpl\ModSettingsBase.cs" />
     <Compile Include="Mods\CoreMod.cs" />
     <Compile Include="Mods\CoreModSettings.cs" />
@@ -86,6 +87,7 @@
     <Compile Include="Utils\Loggers\HbsLogger.cs" />
     <Compile Include="Utils\Loggers\log4NetLogger.cs" />
     <Compile Include="Utils\Loggers\NullLogger.cs" />
+    <Compile Include="Utils\MetaDataHelpers\MechModel.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
@@ -95,7 +97,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="res" />
+    <Content Include="res\BattleMech_Unit_Listing - canon.csv">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

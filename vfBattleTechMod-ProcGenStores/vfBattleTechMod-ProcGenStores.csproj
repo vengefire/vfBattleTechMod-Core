@@ -61,7 +61,6 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Mod\Features\ProcGenStoresContent\Logic\MetaDataHelpers\MechModel.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItem.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\ProcGenStoreItemLoader.cs" />
     <Compile Include="Mod\Features\ProcGenStoresContent\Logic\StoreItem.cs" />

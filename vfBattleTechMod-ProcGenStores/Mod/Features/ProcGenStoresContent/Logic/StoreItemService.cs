@@ -162,7 +162,15 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent.Logic
         {
             if (_storeItems == null)
             {
-                _storeItems = ProcGenStoreItemLoader.LoadItemsFromDataManager(_logger, settings, _storeResourceTypes);
+                try
+                {
+                    _storeItems =
+                        ProcGenStoreItemLoader.LoadItemsFromDataManager(_logger, settings, _storeResourceTypes);
+                }
+                catch (Exception ex)
+                {
+                    _logger.Error($"Exception building items list from Data Manager.", ex);
+                }
             }
             
             var potentialInventoryItems = new List<(ProcGenStoreItem StoreItem, int BracketBonus)>();

@@ -4,9 +4,7 @@ using System.Linq;
 using BattleTech;
 using BattleTech.Data;
 using BattleTech.Rendering;
-using Harmony;
 using HBS.Collections;
-using vfBattleTechMod_Core.Helpers;
 using vfBattleTechMod_Core.Mods.BaseImpl;
 using vfBattleTechMod_Core.Mods.Interfaces;
 
@@ -29,52 +27,10 @@ namespace vfBattleTechMod_ContractSpawnMorphs.Mod.Features.UnitSpawnMorph
                     typeof(TagSetQueryExtensions).GetMethod("GetMatchingUnitDefs"),
                     null,
                     typeof(UnitSpawnMorphFeature).GetMethod("TagSetQueryExtensions_GetMatchingUnitDefs_Postfix"),
-                    null,
-                    0),
-                new ModPatchDirective(
-                    AccessTools.Method(typeof(SimGameState), "_OnDefsLoadComplete"),
-                    null,
-                    typeof(UnitSpawnMorphFeature).GetMethod("SimGameState__OnDefsLoadComplete_Postfix"),
-                    null,
-                    0)
+                    null)
             };
 
         public override string Name => "Procedurally Morph Contract Unit Spawns";
-
-        public static void SimGameState__OnDefsLoadComplete_Postfix(SimGameState __instance)
-        {
-            if (UnitSpawnMorphFeature.AppearanceDatesAdjusted == true)
-            {
-                Logger.Debug($"Appearance dates have already been adjusted.");
-                return;
-            }
-            
-            Logger.Debug("Dynamically adjusting appearance dates...");
-            var appearanceFactor = AppearanceUtils.CalculateAppearanceDateFactor(__instance.GetCampaignStartDate(),
-                Myself.Settings.CompressionFactorControlDate,
-                Myself.Settings.CompressionFactorTargetDate, Logger);
-            
-            __instance.DataManager.MechDefs
-                .Where(pair => pair.Value.MinAppearanceDate.HasValue)
-                .Select(pair => pair.Value)
-                .ToList()
-                .ForEach(mechDef =>
-                {
-                    Logger.Trace($"Calculating new appearance date for [{mechDef.Description.Id}]...");
-                    var appearanceDate = mechDef.MinAppearanceDate;
-                    var newAppearanceDate =
-                        AppearanceUtils.CalculateCompressedAppearanceDate(__instance.GetCampaignStartDate(),
-                            appearanceDate.Value, appearanceFactor, Logger);
-                    Logger.Trace($"Setting appearance date for [{mechDef.Description.Id}] to [{newAppearanceDate}] from [{appearanceDate}]...");
-                    // mechDef.MinAppearanceDate = newAppearanceDate;
-                    var traverse = Traverse.Create(mechDef).Property("MinAppearanceDate");
-                    traverse.SetValue(newAppearanceDate);
-                });
-
-            UnitSpawnMorphFeature.AppearanceDatesAdjusted = true;
-        }
-
-        public static bool AppearanceDatesAdjusted { get; set; } = false;
 
         public static void TagSetQueryExtensions_GetMatchingUnitDefs_Postfix(MetadataDatabase __instance, TagSet requiredTags, DateTime? currentDate, ref List<UnitDef_MDD> __result)
         {

@@ -44,20 +44,19 @@ namespace vfBattleTechMod_ProcGenStores.Mod.Features.ProcGenStoresContent
                     typeof(Shop).GetMethod("RefreshShop"),
                     typeof(ProcGenStoreContentFeature).GetMethod("PrefixRefreshShop"),
                     null,
-                    null,
-                    0)
+                    null)
             };
 
         public override string Name => "Procedurally Generate Store Contents";
 
         public static List<BattleTechResourceType> BattleTechStoreResourceTypes => new List<BattleTechResourceType>
         {
+            BattleTechResourceType.MechDef,
             BattleTechResourceType.AmmunitionBoxDef,
             BattleTechResourceType.UpgradeDef,
             BattleTechResourceType.HeatSinkDef,
             BattleTechResourceType.JumpJetDef,
-            BattleTechResourceType.WeaponDef,
-            BattleTechResourceType.MechDef
+            BattleTechResourceType.WeaponDef
         };
 
         public static bool PrefixRefreshShop(Shop __instance, SimGameState ___Sim, StarSystem ___system)
